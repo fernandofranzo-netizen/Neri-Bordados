@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 654 580" width="100%" height="100%">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&amp;family=Great+Vibes&amp;display=swap');
+      .brand-text-neri {
+        font-family: 'Dancing Script', 'Great Vibes', 'Brush Script MT', cursive;
+        font-size: 82px;
+        font-weight: 700;
+        fill: #583158;
+      }
+      .brand-text-bordados {
+        font-family: 'Dancing Script', 'Great Vibes', 'Brush Script MT', cursive;
+        font-size: 88px;
+        font-weight: 700;
+        fill: #583158;
+      }
+    </style>
+    <filter id="patch-shadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0284c7" flood-opacity="0.2"/>
+    </filter>
+    <filter id="stitch-emboss">
+      <feDropShadow dx="1" dy="1.5" stdDeviation="1" flood-color="#3b0764" flood-opacity="0.3"/>
+    </filter>
+    <pattern id="linen-fabric" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#fdfbfd"/>
+      <path d="M 0,5 L 10,5 M 5,0 L 5,10" stroke="#f3eef4" stroke-width="0.8"/>
+      <circle cx="2.5" cy="2.5" r="0.4" fill="#ebe4ed"/>
+      <circle cx="7.5" cy="7.5" r="0.4" fill="#ebe4ed"/>
+    </pattern>
+  </defs>
+
+  <!-- THE EMBROIDERED SCALLOPED PATCH BADGE -->
+  <g filter="url(#patch-shadow)">
+    <!-- Main Badge Shape with Linen Weave & Thick Teal Satin Stitch Edge -->
+    <path d="
+      M 327 24
+      C 382 24, 435 44, 465 70
+      C 495 96, 524 122, 550 162
+      C 576 202, 622 242, 622 290
+      C 622 338, 576 378, 550 418
+      C 524 458, 495 484, 465 510
+      C 435 536, 382 556, 327 556
+      C 272 556, 219 536, 189 510
+      C 159 484, 130 458, 104 418
+      C 78 378, 32 338, 32 290
+      C 32 242, 78 202, 104 162
+      C 130 122, 159 96, 189 70
+      C 219 44, 272 24, 327 24 Z
+    " fill="url(#linen-fabric)" stroke="#00b4b4" stroke-width="20" stroke-linejoin="round" stroke-linecap="round"/>
+
+    <!-- Outer stitch detail dash -->
+    <path d="
+      M 327 24
+      C 382 24, 435 44, 465 70
+      C 495 96, 524 122, 550 162
+      C 576 202, 622 242, 622 290
+      C 622 338, 576 378, 550 418
+      C 524 458, 495 484, 465 510
+      C 435 536, 382 556, 327 556
+      C 272 556, 219 536, 189 510
+      C 159 484, 130 458, 104 418
+      C 78 378, 32 338, 32 290
+      C 32 242, 78 202, 104 162
+      C 130 122, 159 96, 189 70
+      C 219 44, 272 24, 327 24 Z
+    " fill="none" stroke="#008a8a" stroke-width="3" stroke-dasharray="5,3"/>
+
+    <!-- Inner Magenta Scallop Stitch Outline -->
+    <path d="
+      M 327 46
+      C 370 46, 417 63, 444 85
+      C 471 107, 498 129, 520 165
+      C 542 201, 583 238, 583 290
+      C 583 342, 542 379, 520 415
+      C 498 451, 471 473, 444 495
+      C 417 517, 370 534, 327 534
+      C 284 534, 237 517, 210 495
+      C 183 473, 156 451, 134 415
+      C 112 379, 71 342, 71 290
+      C 71 238, 112 201, 134 165
+      C 156 129, 183 107, 210 85
+      C 237 63, 284 46, 327 46 Z
+    " fill="none" stroke="#d91b82" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- TOP CENTER: EMBROIDERY HOOP (BASTIDOR) -->
+  <g transform="translate(327, 116)">
+    <!-- Screw fastener & ribbon loops on top -->
+    <path d="M -12 -58 L 12 -58 L 10 -46 L -10 -46 Z" fill="#d91b82"/>
+    <circle cx="0" cy="-58" r="4.5" fill="#00b4b4"/>
+    <path d="M -8 -58 C -22 -72, -38 -65, -24 -48 C -13 -40, -5 -48, -8 -58" fill="#d91b82"/>
+    <path d="M 8 -58 C 22 -72, 38 -65, 24 -48 C 13 -40, 5 -48, 8 -58" fill="#d91b82"/>
+
+    <!-- Hoop Outer Ring -->
+    <circle cx="0" cy="0" r="48" fill="none" stroke="#00b4b4" stroke-width="6.5"/>
+    <!-- Hoop Inner Ring -->
+    <circle cx="0" cy="0" r="41" fill="#fdfbfd" stroke="#d91b82" stroke-width="2.5"/>
+
+    <!-- Rainbow Horizontal Embroidery Threads inside Hoop -->
+    <clipPath id="hoop-clip-new">
+      <circle cx="0" cy="0" r="40"/>
+    </clipPath>
+    <g clip-path="url(#hoop-clip-new)">
+      <rect x="-48" y="-42" width="96" height="12" fill="#84cc16"/>
+      <rect x="-48" y="-30" width="96" height="11" fill="#facc15"/>
+      <rect x="-48" y="-19" width="96" height="12" fill="#ec4899"/>
+      <rect x="-48" y="-7" width="96" height="12" fill="#06b6d4"/>
+      <rect x="-48" y="5" width="96" height="11" fill="#ef4444"/>
+      <rect x="-48" y="16" width="96" height="12" fill="#facc15"/>
+      <rect x="-48" y="28" width="96" height="15" fill="#d91b82"/>
+      <!-- Thread Needle in hoop -->
+      <line x1="14" y1="-30" x2="-8" y2="18" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="14" y1="-30" x2="22" y2="-40" stroke="#d91b82" stroke-width="2"/>
+    </g>
+
+    <!-- Lime Green Thread Loops trailing down from hoop -->
+    <path d="M -14 44 C -36 56, -20 72, 2 64 C 18 58, 6 80, -16 80 C -28 80, -22 96, 2 96 C 22 96, 36 112, 26 128" fill="none" stroke="#84cc16" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- TWO PINK HEARTS (Top-Left & Top-Right) -->
+  <g transform="translate(142, 178) rotate(-16) scale(0.95)" filter="url(#stitch-emboss)">
+    <path d="M 0 0 C -14 -20, -32 2, 0 28 C 32 2, 14 -20, 0 0 Z" fill="#d91b82"/>
+  </g>
+  <g transform="translate(512, 178) rotate(16) scale(0.95)" filter="url(#stitch-emboss)">
+    <path d="M 0 0 C -14 -20, -32 2, 0 28 C 32 2, 14 -20, 0 0 Z" fill="#d91b82"/>
+  </g>
+
+  <!-- THE VINTAGE SEWING / EMBROIDERY MACHINE -->
+  <g transform="translate(125, 212)" filter="url(#stitch-emboss)">
+    <!-- Lime Thread running down from spool -->
+    <path d="M 142 35 C 110 18, 60 44, 34 76 C 34 100, 34 142, 34 146" fill="none" stroke="#84cc16" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Wooden Spool on top -->
+    <rect x="134" y="6" width="16" height="24" rx="2" fill="#84cc16" stroke="#78350f" stroke-width="2"/>
+    <line x1="130" y1="6" x2="154" y2="6" stroke="#78350f" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="130" y1="30" x2="154" y2="30" stroke="#78350f" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="142" y1="0" x2="142" y2="6" stroke="#475569" stroke-width="2.5"/>
+
+    <!-- Sewing Machine Body in Teal Satin Embroidery -->
+    <!-- Base -->
+    <path d="M 0 162 C 0 153, 7 146, 16 146 L 192 146 C 201 146, 208 153, 208 162 C 208 171, 201 178, 192 178 L 16 178 C 7 178, 0 171, 0 162 Z" fill="#009698" stroke="#007779" stroke-width="2.5"/>
+
+    <!-- Column, Upper Arm and Head -->
+    <path d="
+      M 120 146
+      L 192 146
+      C 198 146, 204 139, 204 133
+      L 204 62
+      C 204 38, 185 30, 156 30
+      L 44 30
+      C 28 30, 22 40, 22 54
+      L 22 108
+      C 22 116, 28 120, 36 120
+      C 44 120, 50 116, 50 108
+      L 50 70
+      C 50 60, 58 52, 70 52
+      L 142 52
+      C 156 52, 164 62, 164 76
+      L 164 130
+      C 164 139, 156 146, 146 146
+      Z
+    " fill="#009698" stroke="#007779" stroke-width="2.8" stroke-linejoin="round"/>
+
+    <!-- Needle Bar, Foot and Needle -->
+    <rect x="31" y="114" width="6" height="32" fill="#334155"/>
+    <line x1="34" y1="142" x2="34" y2="154" stroke="#0f172a" stroke-width="2.5"/>
+    <!-- Presser foot -->
+    <path d="M 28 152 L 40 152 L 42 154 L 26 154 Z" fill="#0f172a"/>
+
+    <!-- Handwheel on right side -->
+    <path d="M 204 76 C 218 76, 220 110, 204 110 Z" fill="#007779" stroke="#005d5f" stroke-width="2.5"/>
+
+    <!-- Embroidered Red Heart on Machine Body -->
+    <g transform="translate(158, 94) scale(0.95)">
+      <path d="M 0 -8 C -9 -24, -25 -6, 0 18 C 25 -6, 9 -24, 0 -8 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.8"/>
+      <!-- Inner satin stitch light highlight -->
+      <path d="M -4 -4 C -9 -14, -16 -4, -4 9" fill="none" stroke="#fca5a5" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+
+    <!-- Stitch texture dash lines on machine -->
+    <path d="M 60 40 L 148 40" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.6"/>
+    <path d="M 18 162 L 190 162" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.6"/>
+  </g>
+
+  <!-- Wavy Red Thread flowing underneath machine -->
+  <path d="M 142 396 C 188 438, 290 380, 364 416 C 424 446, 464 410, 492 436" fill="none" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- TEXT "Neri Bordados" IN AUTHENTIC PURPLE EMBROIDERY SCRIPT -->
+  <!-- "Neri" -->
+  <g filter="url(#stitch-emboss)">
+    <text x="335" y="324" class="brand-text-neri">
+      Neri
+    </text>
+  </g>
+
+  <!-- "Bordados" -->
+  <g filter="url(#stitch-emboss)">
+    <text x="248" y="412" class="brand-text-bordados">
+      Bordados
+    </text>
+  </g>
+
+  <!-- BOTTOM PINK FLOURISH & RIBBON BOW -->
+  <g transform="translate(365, 478)" stroke="#d91b82" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Center Ribbon Bow -->
+    <path d="M 0 0 C -14 -16, -30 4, 0 12 C 30 4, 14 -16, 0 0" fill="#d91b82" stroke="none"/>
+    <circle cx="0" cy="6" r="4" fill="#f472b6" stroke="#d91b82" stroke-width="2"/>
+    <path d="M -4 10 C -12 24, -20 28, -28 32" stroke="#d91b82" stroke-width="3"/>
+    <path d="M 4 10 C 12 24, 20 28, 28 32" stroke="#d91b82" stroke-width="3"/>
+
+    <!-- Left Swirls -->
+    <path d="M -22 6 C -55 -6, -88 22, -120 6 C -142 -6, -158 10, -148 24 C -136 34, -114 22, -125 6"/>
+
+    <!-- Right Swirls -->
+    <path d="M 22 6 C 55 -6, 88 22, 120 6 C 142 -6, 158 10, 148 24 C 136 34, 114 22, 125 6"/>
+  </g>
+</svg>
