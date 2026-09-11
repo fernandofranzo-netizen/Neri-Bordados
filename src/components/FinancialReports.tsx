@@ -437,8 +437,8 @@ export function FinancialReports({ transactions, onAddTransaction }: FinancialRe
                   <label className="block font-semibold text-slate-700 mb-1">Valor (R$) *</label>
                   <input
                     type="number"
-                    step="0.5"
-                    min="0.1"
+                    step="0.01"
+                    min="0.01"
                     required
                     value={amount}
                     onChange={(e) => setAmount(Number(e.target.value))}

@@ -31,7 +31,7 @@ interface DashboardProps {
   onOpenChat: (order: Order) => void;
   onOpenPdf: (order: Order, type?: 'orcamento' | 'os' | 'recibo') => void;
   onOpenNotifications: () => void;
-  onNavigateTab: (tab: 'orders' | 'calculator' | 'inventory' | 'calendar' | 'financial') => void;
+  onNavigateTab: (tab: 'orders' | 'calculator' | 'inventory' | 'calendar' | 'financial' | 'products') => void;
 }
 
 export function Dashboard({

@@ -12,6 +12,7 @@ import { ChatModal } from './components/ChatModal';
 import { NotificationCenter } from './components/NotificationCenter';
 import { PdfDocumentModal } from './components/PdfDocumentModal';
 import { AtelierAuthModal } from './components/AtelierAuthModal';
+import { SupabaseProductsManager } from './components/SupabaseProductsManager';
 
 import { 
   Order, 
@@ -83,7 +84,7 @@ export default function App() {
     const isAuth = localStorage.getItem('bordado_atelier_auth') === 'true';
     return isAuth ? 'admin' : 'client';
   });
-  const [currentTab, setCurrentTab] = useState<'dashboard' | 'orders' | 'calculator' | 'inventory' | 'calendar' | 'financial'>('dashboard');
+  const [currentTab, setCurrentTab] = useState<'dashboard' | 'orders' | 'calculator' | 'inventory' | 'calendar' | 'financial' | 'products'>('dashboard');
 
   // Authentication Handlers
   const handleRequestAtelierLogin = () => {
@@ -415,6 +416,10 @@ export default function App() {
                 transactions={transactions}
                 onAddTransaction={handleAddTransaction}
               />
+            )}
+
+            {currentTab === 'products' && (
+              <SupabaseProductsManager />
             )}
           </>
         )}

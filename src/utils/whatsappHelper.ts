@@ -2,7 +2,11 @@ import { Order } from '../types';
 import { formatCurrencyBRL } from './calculator';
 
 export const ATELIER_PIX_KEY = 'contato@neribordados.com.br';
-export const ATELIER_PHONE_DISPLAY = '(11) 98765-4321';
+export const ATELIER_WHATSAPP_RAW = '5584988307080';
+export const ATELIER_PHONE_DISPLAY = '(84) 98830-7080';
+export const ATELIER_INSTAGRAM_HANDLE = '@neribordados';
+export const ATELIER_INSTAGRAM_URL = 'https://www.instagram.com/neribordados';
+export const ATELIER_FACEBOOK_URL = 'https://www.facebook.com/nerialba.mendes/';
 
 /**
  * Calcula data limite de validade de 30 dias para orçamentos
@@ -96,16 +100,42 @@ export function buildStage5WhatsAppMessage(order: Order, customPixKey: string = 
 }
 
 /**
+ * Normaliza número de telefone para o formato padrão do WhatsApp internacional (55 + DDD + 9 dígitos)
+ */
+export function normalizeWhatsAppNumber(phone: string): string {
+  const cleanPhone = phone.replace(/\D/g, '');
+  if (!cleanPhone) {
+    return ATELIER_WHATSAPP_RAW;
+  }
+  // Já possui DDI 55 (ex: 5584988307080 ou 5511987654321)
+  if (cleanPhone.startsWith('55') && cleanPhone.length >= 12) {
+    return cleanPhone;
+  }
+  // Possui DDD + Número (ex: 84988307080 -> 11 dígitos)
+  if (cleanPhone.length === 10 || cleanPhone.length === 11) {
+    return `55${cleanPhone}`;
+  }
+  // Apenas número local sem DDD (9 dígitos)
+  if (cleanPhone.length === 9 || cleanPhone.length === 8) {
+    return `5584${cleanPhone}`;
+  }
+  return cleanPhone;
+}
+
+/**
  * Abre a URL oficial do WhatsApp com a mensagem pré-formatada
  */
 export function openWhatsAppNotification(phone: string, message: string): void {
-  const cleanPhone = phone.replace(/\D/g, '');
-  const targetPhone = cleanPhone.length >= 10 ? `55${cleanPhone}` : '';
-  
+  const targetPhone = normalizeWhatsAppNumber(phone);
   const encodedText = encodeURIComponent(message);
-  const url = targetPhone 
-    ? `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodedText}`
-    : `https://api.whatsapp.com/send?text=${encodedText}`;
-  
-  window.open(url, '_blank');
+  const url = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodedText}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+/**
+ * Inicia conversa direta do cliente com o WhatsApp oficial do Ateliê Neri Bordados (5584988307080)
+ */
+export function openAtelierDirectWhatsApp(customMessage?: string): void {
+  const text = customMessage || 'Olá Ateliê Neri Bordados! Gostaria de tirar uma dúvida sobre bordados computadorizados.';
+  openWhatsAppNotification(ATELIER_WHATSAPP_RAW, text);
 }

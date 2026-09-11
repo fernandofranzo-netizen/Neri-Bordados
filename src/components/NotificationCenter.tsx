@@ -9,7 +9,8 @@ import {
   ExternalLink, 
   CheckCircle2, 
   Clock, 
-  AlertTriangle 
+  AlertTriangle,
+  MessageCircle 
 } from 'lucide-react';
 import { Order, MaterialItem } from '../types';
 import { formatCurrencyBRL } from '../utils/calculator';
@@ -191,8 +192,10 @@ export function NotificationCenter({
                     <button
                       onClick={() => sendWhatsAppNotification(d.order, d.order.status === 'pronto' ? 'ready' : 'delivery')}
                       className="px-2 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-medium flex items-center gap-1"
+                      title="Enviar Notificação pelo WhatsApp"
                     >
-                      WhatsApp
+                      <MessageCircle className="w-3.5 h-3.5 fill-white/20" />
+                      <span>Notificar</span>
                     </button>
                   </div>
                 </div>
@@ -238,8 +241,10 @@ export function NotificationCenter({
                   <button
                     onClick={() => sendWhatsAppNotification(o, 'payment')}
                     className="px-2 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-medium flex items-center gap-1"
+                    title="Cobrar via WhatsApp"
                   >
-                    Cobrar no WhatsApp
+                    <MessageCircle className="w-3.5 h-3.5 fill-white/20" />
+                    <span>Cobrar Saldo</span>
                   </button>
                 </div>
               </div>

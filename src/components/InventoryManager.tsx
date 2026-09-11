@@ -436,7 +436,8 @@ export function InventoryManager({
                   <label className="block font-semibold text-slate-700 mb-1">Custo por Unidade (R$)</label>
                   <input
                     type="number"
-                    step="0.5"
+                    min="0"
+                    step="0.01"
                     value={costPerUnit}
                     onChange={(e) => setCostPerUnit(Number(e.target.value))}
                     className="w-full p-2 rounded-lg border border-slate-300"

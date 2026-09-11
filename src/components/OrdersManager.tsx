@@ -18,7 +18,8 @@ import {
   Sparkles,
   User,
   Phone,
-  Heart
+  Heart,
+  MessageCircle
 } from 'lucide-react';
 import { Order, OrderStatus } from '../types';
 import { formatCurrencyBRL } from '../utils/calculator';
@@ -390,11 +391,11 @@ export function OrdersManager({
                     {/* Share WhatsApp */}
                     <button
                       onClick={() => handleShareWhatsApp(order)}
-                      className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
                       title="Enviar Status no WhatsApp do Cliente"
                     >
-                      <Share2 className="w-3.5 h-3.5" />
-                      WhatsApp
+                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-100" />
+                      Status
                     </button>
 
                     {/* Edit Order */}

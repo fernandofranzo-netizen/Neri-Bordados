@@ -1,6 +1,10 @@
 {
   "name": "Neri Bordados",
   "description": "Sistema completo para o ateliê Neri Bordados: gestão de pedidos, orçamentos, estoque de linhas, cálculo de custo e lucro por pontos Brother, calendário de prazos, relatórios financeiros e portal do cliente.",
-  "requestFramePermissions": ["camera"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

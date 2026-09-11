@@ -13,7 +13,8 @@ import {
   Save, 
   Upload, 
   ExternalLink,
-  HelpCircle
+  HelpCircle,
+  MessageCircle
 } from 'lucide-react';
 import { Order, OrderStatus, PaymentStatus, PaymentMethod, EmbroideryItem, InspirationItem } from '../types';
 import { BROTHER_PRESETS, calculateEmbroideryCost, formatCurrencyBRL } from '../utils/calculator';
@@ -273,8 +274,9 @@ export function OrderFormModal({ orderToEdit, onSave, onClose }: OrderFormModalP
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  WhatsApp / Celular
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 mb-1">
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-100" />
+                  <span>Celular / Contato</span>
                 </label>
                 <input
                   type="text"
@@ -469,7 +471,8 @@ export function OrderFormModal({ orderToEdit, onSave, onClose }: OrderFormModalP
                       <span className="absolute left-2.5 top-2 text-xs text-slate-400">R$</span>
                       <input
                         type="number"
-                        step="0.5"
+                        min="0"
+                        step="0.01"
                         value={item.calculatedCost}
                         onChange={(e) => handleUpdateItem(item.id, 'calculatedCost', Number(e.target.value))}
                         className="w-full text-xs rounded-lg border border-slate-300 p-2 pl-8 bg-slate-50 focus:bg-white font-semibold"
@@ -485,7 +488,8 @@ export function OrderFormModal({ orderToEdit, onSave, onClose }: OrderFormModalP
                       <span className="absolute left-2.5 top-2 text-xs text-slate-400">R$</span>
                       <input
                         type="number"
-                        step="1"
+                        min="0"
+                        step="0.01"
                         value={item.priceCharged}
                         onChange={(e) => handleUpdateItem(item.id, 'priceCharged', Number(e.target.value))}
                         className="w-full text-xs rounded-lg border border-rose-300 p-2 pl-8 bg-rose-50/40 focus:bg-white font-black text-rose-700"
@@ -669,7 +673,7 @@ export function OrderFormModal({ orderToEdit, onSave, onClose }: OrderFormModalP
                   <input
                     type="number"
                     min="0"
-                    step="1"
+                    step="0.01"
                     value={discount}
                     onChange={(e) => setDiscount(Number(e.target.value))}
                     className="w-full text-xs rounded-lg border border-slate-700 p-1.5 pl-8 bg-slate-800 text-white font-medium"
@@ -697,7 +701,15 @@ export function OrderFormModal({ orderToEdit, onSave, onClose }: OrderFormModalP
                 <label className="block text-xs text-slate-300 mb-1">Status do Pagamento</label>
                 <select
                   value={paymentStatus}
-                  onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
+                  onChange={(e) => {
+                    const newStatus = e.target.value as PaymentStatus;
+                    setPaymentStatus(newStatus);
+                    if (newStatus === 'sinal_pago' && amountPaid === 0) {
+                      setAmountPaid(Number((finalPrice / 2).toFixed(2)));
+                    } else if (newStatus === 'pago_total') {
+                      setAmountPaid(finalPrice);
+                    }
+                  }}
                   className="w-full text-xs rounded-lg border border-slate-700 p-2 bg-slate-800 text-white"
                 >
                   <option value="pendente">Pendente (Nenhum valor pago)</option>
@@ -723,13 +735,40 @@ export function OrderFormModal({ orderToEdit, onSave, onClose }: OrderFormModalP
               </div>
 
               <div>
-                <label className="block text-xs text-slate-300 mb-1">Quanto o cliente já pagou</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs text-slate-300">Quanto o cliente já pagou</label>
+                  <div className="flex items-center gap-1 text-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const half = Number((finalPrice / 2).toFixed(2));
+                        setAmountPaid(half);
+                        setPaymentStatus('sinal_pago');
+                      }}
+                      className="px-1.5 py-0.5 rounded bg-slate-700 hover:bg-slate-600 text-cyan-300 font-semibold transition-colors"
+                      title="Preencher com 50% de sinal"
+                    >
+                      50% ({formatCurrencyBRL(Number((finalPrice / 2).toFixed(2)))})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAmountPaid(finalPrice);
+                        setPaymentStatus('pago_total');
+                      }}
+                      className="px-1.5 py-0.5 rounded bg-slate-700 hover:bg-slate-600 text-emerald-300 font-semibold transition-colors"
+                      title="Preencher com 100% total"
+                    >
+                      100%
+                    </button>
+                  </div>
+                </div>
                 <div className="relative">
                   <span className="absolute left-2.5 top-1.5 text-xs text-slate-400">R$</span>
                   <input
                     type="number"
                     min="0"
-                    step="5"
+                    step="0.01"
                     value={amountPaid}
                     onChange={(e) => setAmountPaid(Number(e.target.value))}
                     className="w-full text-xs rounded-lg border border-slate-700 p-1.5 pl-8 bg-slate-800 text-white font-bold"

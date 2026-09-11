@@ -1,9 +1,9 @@
-import { Bell, Plus, Calendar, Package, DollarSign, Calculator, Layers, UserCheck, Lock, LogOut, Shield } from 'lucide-react';
+import { Bell, Plus, Calendar, Package, DollarSign, Calculator, Layers, UserCheck, Lock, LogOut, Shield, Database } from 'lucide-react';
 import { NeriLogo } from './NeriLogo';
 
 interface NavbarProps {
-  currentTab: 'dashboard' | 'orders' | 'calculator' | 'inventory' | 'calendar' | 'financial';
-  setCurrentTab: (tab: 'dashboard' | 'orders' | 'calculator' | 'inventory' | 'calendar' | 'financial') => void;
+  currentTab: 'dashboard' | 'orders' | 'calculator' | 'inventory' | 'calendar' | 'financial' | 'products';
+  setCurrentTab: (tab: 'dashboard' | 'orders' | 'calculator' | 'inventory' | 'calendar' | 'financial' | 'products') => void;
   viewMode: 'admin' | 'client';
   setViewMode: (mode: 'admin' | 'client') => void;
   isAtelierAuthenticated: boolean;
@@ -125,6 +125,19 @@ export function Navbar({
               >
                 <DollarSign className="w-3.5 h-3.5" />
                 Financeiro & Lucro
+              </button>
+
+              <button
+                id="nav-tab-products"
+                onClick={() => setCurrentTab('products')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                  currentTab === 'products'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-emerald-800'
+                }`}
+              >
+                <Database className="w-3.5 h-3.5" />
+                Produtos (Supabase)
               </button>
             </nav>
           )}
@@ -283,6 +296,16 @@ export function Navbar({
               }`}
             >
               Financeiro
+            </button>
+            <button
+              onClick={() => setCurrentTab('products')}
+              className={`px-3 py-1 rounded-full whitespace-nowrap ${
+                currentTab === 'products'
+                  ? 'bg-emerald-600 text-white font-medium'
+                  : 'bg-slate-100 text-slate-700'
+              }`}
+            >
+              Produtos (Supabase)
             </button>
           </div>
         )}

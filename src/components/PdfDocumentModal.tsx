@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Download, Printer, FileText, CheckCircle } from 'lucide-react';
+import { X, Download, Printer, FileText, CheckCircle, MessageCircle, Instagram, Facebook } from 'lucide-react';
 import { Order } from '../types';
 import { exportOrderPdf } from '../utils/pdfGenerator';
 import { formatCurrencyBRL } from '../utils/calculator';
@@ -116,11 +116,27 @@ export function PdfDocumentModal({
                   Bordados Computadorizados de Alta Precisão
                 </span>
                 <h1 className="text-2xl font-black tracking-tight text-slate-900 font-display">
-                  ATELIÊ DE BORDADOS
+                  NERI BORDADOS
                 </h1>
                 <p className="text-xs text-slate-600 mt-0.5">
                   Especialista em Máquinas Brother Domésticas | Acabamento Perfeito
                 </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 mt-1.5">
+                  <span className="inline-flex items-center gap-1">
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-100" />
+                    <strong>(84) 98830-7080</strong>
+                  </span>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Instagram className="w-3.5 h-3.5 text-pink-600" />
+                    <strong>@neribordados</strong>
+                  </span>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Facebook className="w-3.5 h-3.5 text-blue-600 fill-blue-50" />
+                    <strong>Nerialba Mendes</strong>
+                  </span>
+                </div>
               </div>
               <div className="text-right text-xs">
                 <div className="font-mono font-bold text-slate-900 text-sm">
@@ -163,7 +179,10 @@ export function PdfDocumentModal({
                   Cliente
                 </span>
                 <p className="font-bold text-slate-900 text-sm">{order.clientName}</p>
-                <p className="text-slate-600">WhatsApp: {order.clientPhone}</p>
+                <p className="text-slate-600 flex items-center gap-1.5">
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-100 shrink-0" />
+                  <span>{order.clientPhone}</span>
+                </p>
                 {order.clientEmail && <p className="text-slate-600">E-mail: {order.clientEmail}</p>}
               </div>
 

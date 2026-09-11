@@ -23,7 +23,12 @@ import {
   Calendar,
   AlertCircle,
   PackageCheck,
-  QrCode
+  QrCode,
+  RotateCcw,
+  Share2,
+  MessageCircle,
+  Instagram,
+  Facebook
 } from 'lucide-react';
 import { Order, ChatMessage, InspirationItem, OrderStatus } from '../types';
 import { formatCurrencyBRL } from '../utils/calculator';
@@ -33,7 +38,13 @@ import {
   getBudgetApprovalCriteria, 
   buildStage5WhatsAppMessage, 
   openWhatsAppNotification, 
-  ATELIER_PIX_KEY 
+  openAtelierDirectWhatsApp,
+  ATELIER_PIX_KEY,
+  ATELIER_PHONE_DISPLAY,
+  ATELIER_WHATSAPP_RAW,
+  ATELIER_INSTAGRAM_HANDLE,
+  ATELIER_INSTAGRAM_URL,
+  ATELIER_FACEBOOK_URL
 } from '../utils/whatsappHelper';
 
 interface ClientPortalProps {
@@ -56,7 +67,9 @@ export function ClientPortal({
   onReturnToAtelier,
 }: ClientPortalProps) {
   const [trackingSearch, setTrackingSearch] = useState('');
-  const [selectedOrderId, setSelectedOrderId] = useState<string>(orders[0]?.id || '');
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
   const [activeTab, setActiveTab] = useState<'tracking' | 'request_quote'>('tracking');
 
   // Client Quote Request Form states
@@ -76,23 +89,70 @@ export function ClientPortal({
   // Chat state inside portal
   const [chatInput, setChatInput] = useState('');
 
-  const selectedOrder = orders.find((o) => o.id === selectedOrderId) || orders[0];
+  // The order is ONLY visible when the client explicitly searches by code or registered phone, or just submitted
+  const selectedOrder = selectedOrderId ? orders.find((o) => o.id === selectedOrderId) || null : null;
   const orderMessages = selectedOrder ? chats[selectedOrder.id] || [] : [];
   const isSelectedUrgent = !!selectedOrder?.isUrgent;
 
   const handleSearchCode = (e: FormEvent) => {
     e.preventDefault();
-    const found = orders.find(
-      (o) =>
-        o.trackingCode.toLowerCase() === trackingSearch.trim().toLowerCase() ||
-        o.clientPhone.replace(/\D/g, '') === trackingSearch.replace(/\D/g, '')
-    );
+    setSearchError(null);
+    setHasSearched(true);
+
+    const query = trackingSearch.trim();
+    if (!query) {
+      setSearchError('Por favor, informe o código do seu pedido (ex: BRD-2026-101) ou o seu telefone.');
+      setSelectedOrderId(null);
+      return;
+    }
+
+    const queryLower = query.toLowerCase();
+    const queryDigits = query.replace(/\D/g, '');
+
+    const found = orders.find((o) => {
+      // 1. Busca por código de rastreio (exato, sem traços ou contido)
+      const orderCodeLower = o.trackingCode.toLowerCase();
+      const cleanOrderCode = orderCodeLower.replace(/[^a-z0-9]/g, '');
+      const cleanQueryCode = queryLower.replace(/[^a-z0-9]/g, '');
+
+      if (orderCodeLower === queryLower || cleanOrderCode === cleanQueryCode) {
+        return true;
+      }
+      if (queryLower.length >= 3 && orderCodeLower.includes(queryLower)) {
+        return true;
+      }
+
+      // 2. Busca por telefone cadastrado (com ou sem DDD, com ou sem DDI 55)
+      if (queryDigits.length >= 4) {
+        const orderPhoneDigits = (o.clientPhone || '').replace(/\D/g, '');
+        const cleanOrderPhone = orderPhoneDigits.startsWith('55') ? orderPhoneDigits.slice(2) : orderPhoneDigits;
+        const cleanQuery = queryDigits.startsWith('55') ? queryDigits.slice(2) : queryDigits;
+
+        if (cleanOrderPhone === cleanQuery) return true;
+        if (cleanOrderPhone.endsWith(cleanQuery) || cleanQuery.endsWith(cleanOrderPhone)) return true;
+        if (orderPhoneDigits.includes(queryDigits) || queryDigits.includes(orderPhoneDigits)) return true;
+      }
+
+      return false;
+    });
+
     if (found) {
       setSelectedOrderId(found.id);
       setActiveTab('tracking');
+      setSearchError(null);
     } else {
-      alert('Nenhum pedido encontrado com este código ou telefone.');
+      setSelectedOrderId(null);
+      setSearchError(
+        `Nenhum pedido localizado para "${query}". Verifique se o código ou o telefone com DDD foram digitados corretamente, ou entre em contato com nosso ateliê.`
+      );
     }
+  };
+
+  const handleClearSearch = () => {
+    setSelectedOrderId(null);
+    setTrackingSearch('');
+    setSearchError(null);
+    setHasSearched(false);
   };
 
   const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -310,6 +370,23 @@ export function ClientPortal({
       {/* Tab 1: Order Tracking View */}
       {activeTab === 'tracking' && selectedOrder && (
         <div className="space-y-6">
+          {/* Top Search Result Banner */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-white px-4 py-3 rounded-2xl border border-cyan-200 shadow-2xs">
+            <div className="flex items-center gap-2.5 text-xs text-slate-700">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+              <span>
+                Pedido localizado: <strong className="text-slate-900 font-mono font-bold">{selectedOrder.trackingCode}</strong> • Cliente: <strong className="text-slate-900">{selectedOrder.clientName}</strong>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors self-end sm:self-auto"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Fazer Nova Busca
+            </button>
+          </div>
+
           {/* Real-Time Status Progress Bar */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
@@ -444,9 +521,10 @@ export function ClientPortal({
                       type="button"
                       onClick={() => openWhatsAppNotification(ATELIER_PHONE_DISPLAY, `Olá! Gostaria de aprovar o orçamento do pedido #${selectedOrder.trackingCode} (${formatCurrencyBRL(isSelectedUrgent ? selectedOrder.finalPrice : selectedOrder.finalPrice * 0.5)}).`)}
                       className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 transition-colors shadow-2xs"
+                      title="Enviar Comprovante pelo WhatsApp"
                     >
-                      <Send className="w-3.5 h-3.5" />
-                      Enviar Comprovante de Pagamento no WhatsApp
+                      <MessageCircle className="w-4 h-4 fill-white/20" />
+                      <span>Enviar Comprovante de Pagamento</span>
                     </button>
                   </div>
                 </div>
@@ -527,8 +605,8 @@ export function ClientPortal({
                         : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20'
                     }`}
                   >
-                    <Send className="w-4 h-4" />
-                    <span>{isSelectedUrgent ? 'Solicitar Coleta no WhatsApp' : 'Enviar Comprovante & Solicitar Coleta'}</span>
+                    <MessageCircle className="w-4 h-4 fill-white/20" />
+                    <span>{isSelectedUrgent ? 'Solicitar Coleta' : 'Enviar Comprovante & Solicitar Coleta'}</span>
                   </button>
                 </div>
               </div>
@@ -667,6 +745,118 @@ export function ClientPortal({
         </div>
       )}
 
+      {/* Tab 1: Fallback view when no order has been searched yet or not found */}
+      {activeTab === 'tracking' && !selectedOrder && (
+        <div className="space-y-6">
+          {searchError && (
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 text-xs text-rose-900 animate-in fade-in duration-150">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <strong className="block font-bold">Nenhum Pedido Encontrado</strong>
+                <p>{searchError}</p>
+                <div className="pt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="px-3 py-1.5 rounded-lg bg-white border border-rose-300 text-rose-700 font-semibold hover:bg-rose-100 flex items-center gap-1 transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Tentar Novamente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openAtelierDirectWhatsApp(`Olá! Gostaria de consultar o status do meu bordado no Ateliê Neri Bordados. Meu nome é...`)}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4 fill-white/20" /> {ATELIER_PHONE_DISPLAY}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-xs space-y-6 text-center max-w-2xl mx-auto animate-in fade-in duration-200">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center shadow-2xs">
+              <Search className="w-8 h-8" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-slate-900 font-display">
+                Consulte o Andamento do seu Pedido
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mx-auto">
+                Para sua total privacidade e segurança, os detalhes do bordado ficam visíveis <strong>apenas após você realizar a busca</strong> pelo <strong>Código do Pedido</strong> (ex: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-800 font-mono font-bold">BRD-2026-101</code>) ou pelo <strong>Telefone cadastrado no primeiro acesso</strong> no campo acima.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 text-left">
+              <div className="p-4 rounded-xl border border-cyan-100 bg-cyan-50/40 space-y-2">
+                <span className="text-[11px] font-bold text-cyan-950 uppercase tracking-wide flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-pink-600" /> Primeiro acesso ou novo pedido?
+                </span>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Envie fotos de inspiração do seu celular ou links do Instagram para montarmos seu orçamento.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('request_quote')}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:text-pink-700 pt-1 transition-colors"
+                >
+                  Solicitar Orçamento Online <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50/40 space-y-2">
+                <span className="text-[11px] font-bold text-emerald-950 uppercase tracking-wide flex items-center gap-1.5">
+                  <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" /> Suporte & Atendimento
+                </span>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Precisa do seu código de rastreio ou tem alguma dúvida? Fale diretamente com nossa equipe.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => openAtelierDirectWhatsApp()}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 pt-1 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" /> {ATELIER_PHONE_DISPLAY} <ExternalLink className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-600">
+              <span className="text-[11px] text-slate-400 font-semibold">Redes & Contatos:</span>
+              <a
+                href={ATELIER_INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-pink-600 hover:text-pink-700 font-bold hover:underline"
+                title="Instagram"
+              >
+                <Instagram className="w-4 h-4 text-pink-600" /> {ATELIER_INSTAGRAM_HANDLE}
+              </a>
+              <span>•</span>
+              <a
+                href={ATELIER_FACEBOOK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-800 font-bold hover:underline"
+                title="Facebook"
+              >
+                <Facebook className="w-4 h-4 text-blue-700" /> Nerialba Mendes
+              </a>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => openAtelierDirectWhatsApp()}
+                className="inline-flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 font-bold hover:underline"
+                title="WhatsApp"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" /> {ATELIER_PHONE_DISPLAY}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tab 2: Client Request Quote Form */}
       {activeTab === 'request_quote' && (
         <div className="bg-white p-6 sm:p-8 rounded-2xl border border-cyan-100 shadow-xs space-y-6">
@@ -697,7 +887,10 @@ export function ClientPortal({
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Seu WhatsApp *</label>
+                <label className="flex items-center gap-1.5 font-semibold text-slate-700 mb-1">
+                  <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" />
+                  <span>Celular / Contato *</span>
+                </label>
                 <input
                   type="text"
                   required
@@ -851,34 +1044,76 @@ export function ClientPortal({
         </div>
       )}
 
-      {/* Discreet Footer with Atelier Staff Access */}
-      <footer className="pt-6 pb-2 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-        <div className="flex items-center gap-2">
-          <span>© 2026 Neri Bordados Computadorizados</span>
-          <span>•</span>
-          <span>Ateliê Especializado Brother</span>
+      {/* Footer with Contacts, Socials and Atelier Staff Access */}
+      <footer className="pt-6 pb-4 border-t border-slate-200/80 space-y-3 text-xs text-slate-500">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="font-semibold text-slate-700">© 2026 Neri Bordados Computadorizados</span>
+            <span className="hidden sm:inline">•</span>
+            <span>Ateliê Especializado Brother</span>
+            <span className="hidden sm:inline">•</span>
+            <button
+              type="button"
+              onClick={() => openAtelierDirectWhatsApp()}
+              className="text-emerald-700 font-bold hover:underline inline-flex items-center gap-1.5"
+              title="WhatsApp"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" />
+              <span>{ATELIER_PHONE_DISPLAY}</span>
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href={ATELIER_INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-pink-600 hover:text-pink-700 font-semibold hover:underline inline-flex items-center gap-1.5"
+              title="Instagram"
+            >
+              <Instagram className="w-4 h-4 text-pink-600" />
+              <span>{ATELIER_INSTAGRAM_HANDLE}</span>
+            </a>
+            <span>•</span>
+            <a
+              href={ATELIER_FACEBOOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-700 hover:text-blue-800 font-semibold hover:underline inline-flex items-center gap-1.5"
+              title="Facebook"
+            >
+              <Facebook className="w-4 h-4 text-blue-700" />
+              <span>Nerialba Mendes</span>
+            </a>
+          </div>
         </div>
 
-        <div>
-          {isAtelierAuthenticated ? (
-            <button
-              onClick={onReturnToAtelier}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-50 text-cyan-800 hover:bg-cyan-100 font-semibold transition-colors border border-cyan-200"
-            >
-              <Shield className="w-3.5 h-3.5 text-cyan-600" />
-              Retornar para o Painel do Ateliê
-            </button>
-          ) : (
-            onRequestAtelierLogin && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px]">
+          <span className="text-slate-400">
+            Orçamentos válidos por 30 dias • Pedidos urgentes aprovados com 100% antecipado (coleta direta na Etapa 5)
+          </span>
+
+          <div>
+            {isAtelierAuthenticated ? (
               <button
-                onClick={onRequestAtelierLogin}
-                className="inline-flex items-center gap-1.5 text-slate-400 hover:text-cyan-800 transition-colors py-1 px-2 rounded hover:bg-slate-200/50"
+                onClick={onReturnToAtelier}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-50 text-cyan-800 hover:bg-cyan-100 font-semibold transition-colors border border-cyan-200 text-xs"
               >
-                <Lock className="w-3 h-3" />
-                Área Restrita do Ateliê (Equipe)
+                <Shield className="w-3.5 h-3.5 text-cyan-600" />
+                Retornar para o Painel do Ateliê
               </button>
-            )
-          )}
+            ) : (
+              onRequestAtelierLogin && (
+                <button
+                  onClick={onRequestAtelierLogin}
+                  className="inline-flex items-center gap-1.5 text-slate-400 hover:text-cyan-800 transition-colors py-1 px-2 rounded hover:bg-slate-200/50"
+                >
+                  <Lock className="w-3 h-3" />
+                  Área Restrita do Ateliê (Equipe)
+                </button>
+              )
+            )}
+          </div>
         </div>
       </footer>
     </div>

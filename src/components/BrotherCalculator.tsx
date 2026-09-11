@@ -11,7 +11,8 @@ import {
   Info,
   Sparkles,
   Scissors,
-  Heart
+  Heart,
+  MessageCircle
 } from 'lucide-react';
 import { BROTHER_PRESETS, calculateEmbroideryCost, formatCurrencyBRL, CalculationInput } from '../utils/calculator';
 import { BrotherMachinePreset } from '../types';
@@ -142,9 +143,10 @@ export function BrotherCalculator({ onUseCalculation }: BrotherCalculatorProps) 
             id="btn-copy-quote"
             onClick={handleCopyWhatsAppQuote}
             className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all border border-cyan-300/20 backdrop-blur-xs"
+            title="Copiar texto formatado para envio"
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'Copiado p/ WhatsApp!' : 'Copiar Texto WhatsApp'}
+            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <MessageCircle className="w-4 h-4 text-emerald-300 fill-emerald-300/30" />}
+            <span>{copied ? 'Copiado!' : 'Copiar Texto'}</span>
           </button>
           {onUseCalculation && (
             <button
@@ -323,7 +325,7 @@ export function BrotherCalculator({ onUseCalculation }: BrotherCalculatorProps) 
                     id="input-matrix-cost"
                     type="number"
                     min="0"
-                    step="1"
+                    step="0.01"
                     value={matrixCost}
                     onChange={(e) => setMatrixCost(Number(e.target.value))}
                     className="w-full text-xs rounded-lg border border-slate-300 p-2 pl-9 bg-slate-50 focus:bg-white"
@@ -377,7 +379,7 @@ export function BrotherCalculator({ onUseCalculation }: BrotherCalculatorProps) 
                   <input
                     id="input-stabilizer-cost"
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     min="0"
                     value={stabilizerCost}
                     onChange={(e) => setStabilizerCost(Number(e.target.value))}
@@ -410,7 +412,7 @@ export function BrotherCalculator({ onUseCalculation }: BrotherCalculatorProps) 
                     <input
                       id="input-blank-cost"
                       type="number"
-                      step="0.5"
+                      step="0.01"
                       min="0"
                       value={blankPieceCost}
                       onChange={(e) => setBlankPieceCost(Number(e.target.value))}
@@ -451,8 +453,8 @@ export function BrotherCalculator({ onUseCalculation }: BrotherCalculatorProps) 
                   <input
                     id="input-artisan-rate"
                     type="number"
-                    min="10"
-                    step="1"
+                    min="1"
+                    step="0.01"
                     value={artisanHourlyRate}
                     onChange={(e) => setArtisanHourlyRate(Number(e.target.value))}
                     className="w-full text-xs rounded-lg border border-slate-300 p-2 pl-9 bg-slate-50 focus:bg-white"
