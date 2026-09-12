@@ -70,7 +70,7 @@ export function ClientPortal({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [activeTab, setActiveTab] = useState<'tracking' | 'request_quote'>('tracking');
+  const [activeTab, setActiveTab] = useState<'tracking' | 'request_quote'>('request_quote');
 
   // Client Quote Request Form states
   const [clientName, setClientName] = useState('');
@@ -158,6 +158,7 @@ export function ClientPortal({
       setSearchError(null);
     } else {
       setSelectedOrderId(null);
+      setActiveTab('tracking');
       setSearchError(
         `Nenhum pedido localizado para "${query}". Verifique se o código ou o telefone com DDD foram digitados corretamente, ou entre em contato com nosso ateliê.`
       );
@@ -346,11 +347,11 @@ export function ClientPortal({
             </div>
           </div>
 
-          <div className="flex bg-cyan-950/60 p-1 rounded-xl backdrop-blur-xs border border-cyan-500/30 text-xs shrink-0">
+          <div className="flex bg-[#071d33] p-1 rounded-2xl backdrop-blur-xs border border-cyan-500/40 text-xs shrink-0 shadow-inner">
             <button
               type="button"
-              onClick={handleFocusSearch}
-              className={`px-3.5 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+              onClick={() => setActiveTab('tracking')}
+              className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 ${
                 activeTab === 'tracking'
                   ? 'bg-cyan-600 text-white shadow-xs'
                   : 'text-cyan-200 hover:text-white'
@@ -361,14 +362,14 @@ export function ClientPortal({
             </button>
             <button
               type="button"
-              onClick={handleScrollToQuote}
-              className={`px-3.5 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+              onClick={() => setActiveTab('request_quote')}
+              className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 ${
                 activeTab === 'request_quote'
-                  ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-xs'
-                  : 'text-pink-200 hover:text-white bg-pink-950/40 border border-pink-500/30'
+                  ? 'bg-[#e60067] hover:bg-[#d6005f] text-white shadow-md shadow-pink-950/40 border border-white/30 ring-1 ring-white/20'
+                  : 'text-pink-200 hover:text-white'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+              <Sparkles className="w-3.5 h-3.5 text-white" />
               <span>Solicitar Orçamento</span>
             </button>
           </div>
@@ -406,8 +407,8 @@ export function ClientPortal({
         </form>
       </div>
 
-      {/* Order Tracking View (Visible when an order is matched via code/phone search or just created) */}
-      {selectedOrder && (
+      {/* Order Tracking View (Visible when active tab is tracking and order is matched or created) */}
+      {activeTab === 'tracking' && selectedOrder && (
         <div className="space-y-6">
           {requestSubmitted && (
             <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-start justify-between gap-3 text-xs text-emerald-950 shadow-2xs animate-in fade-in duration-200">
@@ -858,8 +859,8 @@ export function ClientPortal({
         </div>
       )}
 
-      {/* Tela Principal no Primeiro Acesso (quando nenhum pedido foi pesquisado ou após limpar busca) */}
-      {!selectedOrder && (
+      {/* Tab: Acompanhar Pedido - Informações e Busca de Pedido */}
+      {activeTab === 'tracking' && !selectedOrder && (
         <div className="space-y-6 animate-in fade-in duration-200">
           {searchError && (
             <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 text-xs text-rose-900 animate-in fade-in duration-150">
@@ -887,72 +888,96 @@ export function ClientPortal({
             </div>
           )}
 
-          {/* Cards de Destaque no Primeiro Acesso */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Opção 1: Consultar Pedido Existente */}
-            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-3 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center shadow-2xs">
-                  <Search className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-900 font-display">
-                  Já tem um Pedido em Andamento?
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Para sua total privacidade e segurança, os detalhes do bordado ficam visíveis <strong>apenas após você realizar a busca</strong> pelo <strong>Código do Pedido</strong> (ex: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-800 font-mono font-bold">BRD-2026-101</code>) ou pelo <strong>Telefone cadastrado</strong> no campo de busca acima.
-                </p>
-              </div>
+          <div className="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-xs space-y-6 text-center max-w-2xl mx-auto">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center shadow-2xs">
+              <Search className="w-8 h-8" />
+            </div>
 
-              <div className="pt-2">
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-slate-900 font-display">
+                Consulte o Andamento do seu Pedido
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mx-auto">
+                Para sua total privacidade e segurança, os detalhes do bordado ficam visíveis <strong>apenas após você realizar a busca</strong> pelo <strong>Código do Pedido</strong> (ex: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-800 font-mono font-bold">BRD-2026-101</code>) ou pelo <strong>Telefone cadastrado</strong> no campo de busca acima.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 text-left">
+              <div className="p-4 rounded-xl border border-pink-100 bg-pink-50/40 space-y-2">
+                <span className="text-[11px] font-bold text-pink-950 uppercase tracking-wide flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-pink-600" /> Primeiro acesso ou novo pedido?
+                </span>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Deseja fazer um novo pedido ou solicitar orçamento? Escolha insumos e envie fotos do seu celular.
+                </p>
                 <button
                   type="button"
-                  onClick={handleFocusSearch}
-                  className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+                  onClick={() => setActiveTab('request_quote')}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:text-pink-700 pt-1 transition-colors"
                 >
-                  <Search className="w-4 h-4 text-cyan-300" />
-                  Consultar Pedido no Campo Acima ↑
+                  Solicitar Orçamento Online <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50/40 space-y-2">
+                <span className="text-[11px] font-bold text-emerald-950 uppercase tracking-wide flex items-center gap-1.5">
+                  <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" /> Suporte & Atendimento
+                </span>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Precisa do seu código de rastreio ou tem alguma dúvida? Fale diretamente com nossa equipe.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => openAtelierDirectWhatsApp()}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 pt-1 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" /> {ATELIER_PHONE_DISPLAY} <ExternalLink className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Opção 2: Solicitar Orçamento */}
-            <div className="bg-gradient-to-br from-pink-50/70 via-rose-50/40 to-white p-5 sm:p-6 rounded-2xl border border-pink-200 shadow-2xs space-y-3 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-pink-100 border border-pink-200 text-pink-700 flex items-center justify-center shadow-2xs">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-pink-100 text-pink-800 border border-pink-200">
-                    Sempre Visível no 1º Acesso
-                  </span>
-                </div>
-                <h3 className="text-base font-bold text-slate-900 font-display">
-                  Deseja Encomendar um Bordado?
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Solicite seu orçamento online sem compromisso! Você pode escolher insumos pré-selecionados (fraldas Cremer, toalhas Döhler, jalecos), definir a quantidade de peças e anexar fotos ou links de inspiração.
-                </p>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={handleScrollToQuote}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Preencher Orçamento Logo Abaixo ↓
-                </button>
-              </div>
+            <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-600">
+              <span className="text-[11px] text-slate-400 font-semibold">Redes & Contatos:</span>
+              <a
+                href={ATELIER_INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-pink-600 hover:text-pink-700 font-bold hover:underline"
+                title="Instagram"
+              >
+                <Instagram className="w-4 h-4 text-pink-600" /> {ATELIER_INSTAGRAM_HANDLE}
+              </a>
+              <span>•</span>
+              <a
+                href={ATELIER_FACEBOOK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-800 font-bold hover:underline"
+                title="Facebook"
+              >
+                <Facebook className="w-4 h-4 text-blue-700" /> Nerialba Mendes
+              </a>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => openAtelierDirectWhatsApp()}
+                className="inline-flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 font-bold hover:underline"
+                title="WhatsApp"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" /> {ATELIER_PHONE_DISPLAY}
+              </button>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* FORMULÁRIO DE ORÇAMENTO: SEMPRE VISÍVEL NO PRIMEIRO ACESSO */}
-          <div
-            ref={quoteSectionRef}
-            id="secao-orcamento"
-            className="bg-white p-6 sm:p-8 rounded-2xl border border-pink-200 shadow-xs space-y-6 scroll-mt-6 ring-1 ring-pink-100"
-          >
+      {/* Tab: Solicitar Orçamento (Selected by default on initial access) */}
+      {activeTab === 'request_quote' && (
+        <div
+          ref={quoteSectionRef}
+          id="secao-orcamento"
+          className="bg-white p-6 sm:p-8 rounded-2xl border border-pink-200 shadow-xs space-y-6 animate-in fade-in duration-200 ring-1 ring-pink-100"
+        >
             <div>
               <div className="flex items-center gap-2">
                 <span className="p-1.5 rounded-lg bg-pink-100 text-pink-700">
@@ -1169,7 +1194,6 @@ export function ClientPortal({
               </button>
             </div>
           </form>
-        </div>
         </div>
       )}
 
