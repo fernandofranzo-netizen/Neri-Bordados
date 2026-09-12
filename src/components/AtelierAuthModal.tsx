@@ -318,7 +318,7 @@ export function AtelierAuthModal({
               </div>
             </form>
           ) : (
-            /* Forgot Password: Password Revealed Step (after CPF 06169721480 is verified) */
+            /* Forgot Password: Password Revealed Step (after CPF is verified) */
             <div className="space-y-4 animate-in fade-in duration-200">
               <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl space-y-3">
                 <div className="flex items-center gap-2 text-emerald-900">

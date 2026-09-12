@@ -717,7 +717,7 @@ export function ClientPortal({
                       O seu produto está <strong>100% pronto e inspecionado</strong>! Como este pedido entrou no <strong>critério urgente</strong> e foi aprovado com a comprovação do <strong>pagamento de 100% do valor antecipadamente</strong>, você deverá <strong>solicitar apenas a coleta</strong> da sua encomenda.
                     </p>
                     <p className="text-slate-600 text-xs">
-                      Pode retirar diretamente em nosso balcão ou solicitar portador (Uber Flash / 99 Entregas / Motoboy). Avise nossa equipe pelo WhatsApp para liberarmos o pacote!
+                      Pode retirar diretamente em nosso balcão ou solicitar portador (Uber Flash / 99 Entregas / Motoboy) para liberação da encomenda.
                     </p>
                   </div>
                 ) : (
@@ -726,7 +726,7 @@ export function ClientPortal({
                       O seu produto está pronto no ateliê! Conforme as condições do orçamento aprovado, você deve <strong>providenciar a coleta após o pagamento do restante do valor aprovado</strong> ({formatCurrencyBRL(selectedOrder.pendingAmount || selectedOrder.finalPrice * 0.5)}).
                     </p>
                     <p className="text-slate-600 text-xs">
-                      Após efetuar o pagamento do saldo restante de 50%, envie o comprovante no WhatsApp para liberação imediata no balcão ou para o serviço de coleta.
+                      Após efetuar o pagamento do saldo restante de 50%, apresente o comprovante para liberação imediata no balcão ou para o serviço de coleta.
                     </p>
                   </div>
                 )}

@@ -65,7 +65,7 @@ const SLIDES: Slide[] = [
     highlights: [
       'Duplo ambiente integrado: Portal do Cliente aberto e Painel do Ateliê protegido',
       'Design responsivo para celulares, tablets e telas de alta resolução',
-      'Canais oficiais integrados: WhatsApp (84) 98830-7080, Pix e redes sociais',
+      'Canais integrados: Chave Pix oficial, redes sociais e balcão do ateliê',
     ],
     icon: Sparkles,
     actionText: 'Ver Portal do Cliente',
@@ -144,24 +144,24 @@ const SLIDES: Slide[] = [
   },
   {
     id: 'security-sms',
-    badge: 'Cena 5 de 6 • Segurança & Recuperação',
+    badge: 'Cena 5 de 6 • Segurança & Acesso',
     badgeColor: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/30',
-    title: 'Acesso Restrito & Recuperação por CPF e SMS',
-    tagline: 'O painel administrativo é protegido por senha, com validação de CPF e envio por SMS.',
+    title: 'Acesso Restrito & Validação de Segurança',
+    tagline: 'O painel administrativo é protegido por senha, com validação confidencial do CPF do titular.',
     narrative:
-      'Para proteger dados operacionais e financeiros, o Ateliê conta com autenticação restrita. Ao esquecer a senha, o sistema faz uma pergunta de segurança solicitando o CPF. Confirmado o titular, a senha é liberada e pode ser enviada por SMS.',
+      'Para proteger dados operacionais e financeiros, o Ateliê conta com autenticação restrita. Em caso de necessidade de consulta ou recuperação de senha, o sistema valida a titularidade por meio do CPF cadastrado, mantendo os dados protegidos e em sigilo.',
     highlights: [
       'Proteção por senha no painel administrativo do Ateliê',
-      'Validação de segurança rigorosa via CPF do titular (06169721480)',
-      'Envio automático da senha para o celular registrado via SMS (5584991548140)',
+      'Validação de segurança confidencial via CPF do titular',
+      'Liberação imediata no sistema com visualização e cópia segura',
     ],
     icon: Shield,
-    actionText: 'Testar Segurança & CPF',
+    actionText: 'Testar Segurança do Painel',
     actionPayload: { openAuth: true },
     stats: [
-      { label: 'CPF do Titular', value: '061.697.214-80' },
-      { label: 'SMS Destino', value: '(84) 99154-8140' },
-      { label: 'Camada de Proteção', value: 'Duplo Fator' },
+      { label: 'Validação', value: 'CPF do Titular' },
+      { label: 'Privacidade', value: 'Dados Sigilosos' },
+      { label: 'Camada de Proteção', value: 'Acesso Restrito' },
     ],
   },
   {
