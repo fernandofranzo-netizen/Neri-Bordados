@@ -13,13 +13,17 @@ export interface Produto {
 // Configuração segura com lazy initialization
 let supabaseInstance: SupabaseClient | null = null;
 
+function cleanSupabaseUrl(rawUrl: string): string {
+  return rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+}
+
 export function getSupabaseClient(): SupabaseClient | null {
   if (supabaseInstance) {
     return supabaseInstance;
   }
 
   // Tenta obter de process.env (Node/SSR/Build) ou import.meta.env (Vite client)
-  const supabaseUrl = 
+  const rawUrl = 
     (typeof process !== 'undefined' && process.env?.SUPABASE_URL) ||
     (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_SUPABASE_URL);
 
@@ -27,12 +31,13 @@ export function getSupabaseClient(): SupabaseClient | null {
     (typeof process !== 'undefined' && process.env?.SUPABASE_ANON_KEY) ||
     (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_SUPABASE_ANON_KEY);
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!rawUrl || !supabaseAnonKey) {
     return null;
   }
 
   try {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
+    const cleanUrl = cleanSupabaseUrl(rawUrl);
+    supabaseInstance = createClient(cleanUrl, supabaseAnonKey);
     return supabaseInstance;
   } catch (error) {
     console.error('[Supabase] Erro ao instanciar cliente:', error);

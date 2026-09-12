@@ -76,7 +76,8 @@ export function ClientPortal({
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [pieceDescription, setPieceDescription] = useState('');
-  const [pieceType, setPieceType] = useState('Toalha de Banho');
+  const [pieceType, setPieceType] = useState('Toalha Fralda Cremer 120cm x 70cm');
+  const [pieceQuantity, setPieceQuantity] = useState(1);
   const [clientNotes, setClientNotes] = useState('');
   const [inspirations, setInspirations] = useState<InspirationItem[]>([]);
   const [webLink, setWebLink] = useState('');
@@ -85,6 +86,8 @@ export function ClientPortal({
   const [isQuoteUrgent, setIsQuoteUrgent] = useState(false);
   const [copiedPixPortal, setCopiedPixPortal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const quoteSectionRef = useRef<HTMLDivElement>(null);
 
   // Chat state inside portal
   const [chatInput, setChatInput] = useState('');
@@ -93,6 +96,19 @@ export function ClientPortal({
   const selectedOrder = selectedOrderId ? orders.find((o) => o.id === selectedOrderId) || null : null;
   const orderMessages = selectedOrder ? chats[selectedOrder.id] || [] : [];
   const isSelectedUrgent = !!selectedOrder?.isUrgent;
+
+  const handleScrollToQuote = () => {
+    setActiveTab('request_quote');
+    setTimeout(() => {
+      quoteSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
+  const handleFocusSearch = () => {
+    setActiveTab('tracking');
+    searchInputRef.current?.focus();
+    searchInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   const handleSearchCode = (e: FormEvent) => {
     e.preventDefault();
@@ -217,6 +233,13 @@ export function ClientPortal({
 
     const validity = calculateBudgetValidity();
     const newTracking = `BRD-2026-${Math.floor(100 + Math.random() * 900)}`;
+    const qty = Math.max(1, pieceQuantity || 1);
+    const unitCost = 24.0;
+    const unitPrice = 65.0;
+    const itemCost = Math.round(unitCost * qty * 100) / 100;
+    const itemPrice = Math.round(unitPrice * qty * 100) / 100;
+    const itemProfit = Math.round((itemPrice - itemCost) * 100) / 100;
+
     const newOrder: Order = {
       id: `ord-client-${Date.now()}`,
       trackingCode: newTracking,
@@ -233,25 +256,28 @@ export function ClientPortal({
           id: `item-c-${Date.now()}`,
           description: pieceDescription.trim(),
           pieceType,
+          quantity: qty,
+          unitCost,
+          unitPriceCharged: unitPrice,
           clientProvidedPiece: false,
           pieceCost: 15.0,
           stitchesCount: 15000,
           hoopSize: '13x18 cm',
           threadColorsCount: 3,
-          calculatedCost: 24.0,
-          priceCharged: 65.0,
+          calculatedCost: itemCost,
+          priceCharged: itemPrice,
         },
       ],
-      totalStitches: 15000,
-      totalCost: 24.0,
-      totalPrice: 65.0,
+      totalStitches: 15000 * qty,
+      totalCost: itemCost,
+      totalPrice: itemPrice,
       discount: 0,
-      finalPrice: 65.0,
-      profit: 41.0,
+      finalPrice: itemPrice,
+      profit: itemProfit,
       paymentStatus: 'pendente',
       paymentMethod: 'pix',
       amountPaid: 0,
-      pendingAmount: 65.0,
+      pendingAmount: itemPrice,
       brotherMachineModel: 'Brother PE810L',
       inspirations,
     };
@@ -322,54 +348,90 @@ export function ClientPortal({
 
           <div className="flex bg-cyan-950/60 p-1 rounded-xl backdrop-blur-xs border border-cyan-500/30 text-xs shrink-0">
             <button
-              onClick={() => setActiveTab('tracking')}
-              className={`px-3.5 py-2 rounded-lg font-bold transition-all ${
+              type="button"
+              onClick={handleFocusSearch}
+              className={`px-3.5 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
                 activeTab === 'tracking'
                   ? 'bg-cyan-600 text-white shadow-xs'
                   : 'text-cyan-200 hover:text-white'
               }`}
             >
-              Acompanhar Pedido
+              <Search className="w-3.5 h-3.5" />
+              <span>Acompanhar Pedido</span>
             </button>
             <button
-              onClick={() => setActiveTab('request_quote')}
-              className={`px-3.5 py-2 rounded-lg font-bold transition-all ${
+              type="button"
+              onClick={handleScrollToQuote}
+              className={`px-3.5 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
                 activeTab === 'request_quote'
-                  ? 'bg-pink-600 text-white shadow-xs'
-                  : 'text-cyan-200 hover:text-white'
+                  ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-xs'
+                  : 'text-pink-200 hover:text-white bg-pink-950/40 border border-pink-500/30'
               }`}
             >
-              Solicitar Orçamento
+              <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+              <span>Solicitar Orçamento</span>
             </button>
           </div>
         </div>
 
-        {/* Quick Search for Tracking Code */}
-        {activeTab === 'tracking' && (
-          <form onSubmit={handleSearchCode} className="pt-2 flex flex-col sm:flex-row gap-2 max-w-lg relative z-10">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-cyan-300 absolute left-3.5 top-3" />
-              <input
-                type="text"
-                value={trackingSearch}
-                onChange={(e) => setTrackingSearch(e.target.value)}
-                placeholder="Digite seu Código (ex: BRD-2026-101) ou Telefone..."
-                className="w-full text-xs p-2.5 pl-10 rounded-xl bg-white/10 text-white placeholder-cyan-200/50 border border-cyan-500/30 focus:bg-white/20 focus:outline-hidden"
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-xs font-bold shrink-0 transition-all shadow-sm"
-            >
-              Buscar Pedido
-            </button>
-          </form>
-        )}
+        {/* Quick Search & Quote CTA in Banner */}
+        <form onSubmit={handleSearchCode} className="pt-2 flex flex-col sm:flex-row gap-2 max-w-2xl relative z-10">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-cyan-300 absolute left-3.5 top-3" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={trackingSearch}
+              onChange={(e) => setTrackingSearch(e.target.value)}
+              placeholder="Digite seu Código (ex: BRD-2026-101) ou Telefone..."
+              className="w-full text-xs p-2.5 pl-10 rounded-xl bg-white/10 text-white placeholder-cyan-200/50 border border-cyan-500/30 focus:bg-white/20 focus:outline-hidden"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-xs font-bold shrink-0 transition-all shadow-sm flex items-center justify-center gap-1.5"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span>Buscar Pedido</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleScrollToQuote}
+            className="px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-pink-400/40 hover:border-pink-300 text-xs font-bold shrink-0 flex items-center justify-center gap-1.5 transition-all shadow-2xs"
+            title="Preencher orçamento online"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-pink-300" />
+            <span>Novo Orçamento</span>
+          </button>
+        </form>
       </div>
 
-      {/* Tab 1: Order Tracking View */}
-      {activeTab === 'tracking' && selectedOrder && (
+      {/* Order Tracking View (Visible when an order is matched via code/phone search or just created) */}
+      {selectedOrder && (
         <div className="space-y-6">
+          {requestSubmitted && (
+            <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-start justify-between gap-3 text-xs text-emerald-950 shadow-2xs animate-in fade-in duration-200">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="block font-bold text-sm text-emerald-900">
+                    Solicitação de Orçamento Enviada com Sucesso!
+                  </strong>
+                  <p className="text-emerald-800 mt-0.5">
+                    Seu código de acompanhamento é <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-emerald-300 text-slate-900">{selectedOrder.trackingCode}</span>. Você pode acompanhar a análise da matriz e a produção em tempo real nesta tela.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRequestSubmitted(false)}
+                className="text-emerald-700 hover:text-emerald-900 text-[11px] font-bold underline shrink-0"
+              >
+                Dispensar
+              </button>
+            </div>
+          )}
+
           {/* Top Search Result Banner */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-white px-4 py-3 rounded-2xl border border-cyan-200 shadow-2xs">
             <div className="flex items-center gap-2.5 text-xs text-slate-700">
@@ -378,13 +440,22 @@ export function ClientPortal({
                 Pedido localizado: <strong className="text-slate-900 font-mono font-bold">{selectedOrder.trackingCode}</strong> • Cliente: <strong className="text-slate-900">{selectedOrder.clientName}</strong>
               </span>
             </div>
-            <button
-              type="button"
-              onClick={handleClearSearch}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors self-end sm:self-auto"
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Fazer Nova Busca
-            </button>
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Fazer Nova Busca
+              </button>
+              <button
+                type="button"
+                onClick={handleScrollToQuote}
+                className="px-3 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-pink-600" /> Solicitar Novo Orçamento
+              </button>
+            </div>
           </div>
 
           {/* Real-Time Status Progress Bar */}
@@ -475,6 +546,48 @@ export function ClientPortal({
               </div>
               <div className="px-3 py-1 bg-white rounded-lg border border-slate-200 text-[11px] font-semibold text-slate-700">
                 Bastidor: {selectedOrder.items[0]?.hoopSize || '13x18 cm'}
+              </div>
+            </div>
+
+            {/* Itens do Pedido (Insumos & Quantidade) */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5 text-xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                Itens & Insumos do Pedido ({selectedOrder.items.reduce((s, i) => s + (i.quantity || 1), 0)} peças)
+              </span>
+              <div className="space-y-2">
+                {selectedOrder.items.map((it, idx) => {
+                  const qty = it.quantity || 1;
+                  const unitPrice = it.unitPriceCharged || (it.priceCharged / qty);
+                  return (
+                    <div key={it.id || idx} className="bg-white p-3 rounded-lg border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+                      <div>
+                        <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                          <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[11px] font-mono font-bold">
+                            {qty}x
+                          </span>
+                          <span>{it.pieceType || it.description}</span>
+                        </div>
+                        {it.description && it.description !== it.pieceType && (
+                          <p className="text-[11px] text-slate-600 mt-0.5">{it.description}</p>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          {it.clientProvidedPiece ? 'Peça do cliente' : 'Insumo fornecido pelo ateliê'} • {(it.stitchesCount || 0).toLocaleString('pt-BR')} pts ({it.hoopSize})
+                        </p>
+                      </div>
+
+                      <div className="text-right sm:self-center shrink-0">
+                        {qty > 1 && (
+                          <span className="text-[10px] text-slate-400 block font-mono">
+                            {formatCurrencyBRL(unitPrice)}/un
+                          </span>
+                        )}
+                        <span className="font-mono font-extrabold text-slate-900 text-sm">
+                          {formatCurrencyBRL(it.priceCharged)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -745,9 +858,9 @@ export function ClientPortal({
         </div>
       )}
 
-      {/* Tab 1: Fallback view when no order has been searched yet or not found */}
-      {activeTab === 'tracking' && !selectedOrder && (
-        <div className="space-y-6">
+      {/* Tela Principal no Primeiro Acesso (quando nenhum pedido foi pesquisado ou após limpar busca) */}
+      {!selectedOrder && (
+        <div className="space-y-6 animate-in fade-in duration-200">
           {searchError && (
             <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 text-xs text-rose-900 animate-in fade-in duration-150">
               <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
@@ -774,105 +887,90 @@ export function ClientPortal({
             </div>
           )}
 
-          <div className="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-xs space-y-6 text-center max-w-2xl mx-auto animate-in fade-in duration-200">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center shadow-2xs">
-              <Search className="w-8 h-8" />
+          {/* Cards de Destaque no Primeiro Acesso */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Opção 1: Consultar Pedido Existente */}
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center shadow-2xs">
+                  <Search className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900 font-display">
+                  Já tem um Pedido em Andamento?
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Para sua total privacidade e segurança, os detalhes do bordado ficam visíveis <strong>apenas após você realizar a busca</strong> pelo <strong>Código do Pedido</strong> (ex: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-800 font-mono font-bold">BRD-2026-101</code>) ou pelo <strong>Telefone cadastrado</strong> no campo de busca acima.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleFocusSearch}
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+                >
+                  <Search className="w-4 h-4 text-cyan-300" />
+                  Consultar Pedido no Campo Acima ↑
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold text-slate-900 font-display">
-                Consulte o Andamento do seu Pedido
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mx-auto">
-                Para sua total privacidade e segurança, os detalhes do bordado ficam visíveis <strong>apenas após você realizar a busca</strong> pelo <strong>Código do Pedido</strong> (ex: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-800 font-mono font-bold">BRD-2026-101</code>) ou pelo <strong>Telefone cadastrado no primeiro acesso</strong> no campo acima.
+            {/* Opção 2: Solicitar Orçamento */}
+            <div className="bg-gradient-to-br from-pink-50/70 via-rose-50/40 to-white p-5 sm:p-6 rounded-2xl border border-pink-200 shadow-2xs space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-pink-100 border border-pink-200 text-pink-700 flex items-center justify-center shadow-2xs">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-pink-100 text-pink-800 border border-pink-200">
+                    Sempre Visível no 1º Acesso
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-slate-900 font-display">
+                  Deseja Encomendar um Bordado?
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Solicite seu orçamento online sem compromisso! Você pode escolher insumos pré-selecionados (fraldas Cremer, toalhas Döhler, jalecos), definir a quantidade de peças e anexar fotos ou links de inspiração.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleScrollToQuote}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Preencher Orçamento Logo Abaixo ↓
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* FORMULÁRIO DE ORÇAMENTO: SEMPRE VISÍVEL NO PRIMEIRO ACESSO */}
+          <div
+            ref={quoteSectionRef}
+            id="secao-orcamento"
+            className="bg-white p-6 sm:p-8 rounded-2xl border border-pink-200 shadow-xs space-y-6 scroll-mt-6 ring-1 ring-pink-100"
+          >
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-pink-100 text-pink-700">
+                  <Sparkles className="w-4 h-4" />
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wider text-pink-600">
+                  Novo Orçamento Personalizado • Neri Bordados
+                </span>
+              </div>
+              <h2 className="text-xl font-bold font-display text-slate-900 mt-2">
+                Descreva o que você gostaria de bordar no Neri Bordados
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Preencha os dados abaixo, escolha a peça e a quantidade. Anexe fotos da câmera do seu celular ou cole links do Instagram e Pinterest para avaliarmos a matriz computadorizada na bordadeira Brother PE810L.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 text-left">
-              <div className="p-4 rounded-xl border border-cyan-100 bg-cyan-50/40 space-y-2">
-                <span className="text-[11px] font-bold text-cyan-950 uppercase tracking-wide flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-pink-600" /> Primeiro acesso ou novo pedido?
-                </span>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Envie fotos de inspiração do seu celular ou links do Instagram para montarmos seu orçamento.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('request_quote')}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:text-pink-700 pt-1 transition-colors"
-                >
-                  Solicitar Orçamento Online <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50/40 space-y-2">
-                <span className="text-[11px] font-bold text-emerald-950 uppercase tracking-wide flex items-center gap-1.5">
-                  <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" /> Suporte & Atendimento
-                </span>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Precisa do seu código de rastreio ou tem alguma dúvida? Fale diretamente com nossa equipe.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => openAtelierDirectWhatsApp()}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 pt-1 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" /> {ATELIER_PHONE_DISPLAY} <ExternalLink className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-600">
-              <span className="text-[11px] text-slate-400 font-semibold">Redes & Contatos:</span>
-              <a
-                href={ATELIER_INSTAGRAM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-pink-600 hover:text-pink-700 font-bold hover:underline"
-                title="Instagram"
-              >
-                <Instagram className="w-4 h-4 text-pink-600" /> {ATELIER_INSTAGRAM_HANDLE}
-              </a>
-              <span>•</span>
-              <a
-                href={ATELIER_FACEBOOK_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-800 font-bold hover:underline"
-                title="Facebook"
-              >
-                <Facebook className="w-4 h-4 text-blue-700" /> Nerialba Mendes
-              </a>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={() => openAtelierDirectWhatsApp()}
-                className="inline-flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 font-bold hover:underline"
-                title="WhatsApp"
-              >
-                <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" /> {ATELIER_PHONE_DISPLAY}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Client Request Quote Form */}
-      {activeTab === 'request_quote' && (
-        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-cyan-100 shadow-xs space-y-6">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-pink-600">
-              Novo Orçamento Personalizado
-            </span>
-            <h2 className="text-xl font-bold font-display text-slate-900 mt-1">
-              Descreva o que você gostaria de bordar no Neri Bordados
-            </h2>
-            <p className="text-xs text-slate-500">
-              Anexe fotos da câmera do seu celular ou cole links do Instagram e Pinterest para avaliarmos a matriz
-            </p>
-          </div>
-
-          <form onSubmit={handleClientSubmitQuote} className="space-y-4 text-xs">
+            <form onSubmit={handleClientSubmitQuote} className="space-y-4 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">Seu Nome Completo *</label>
@@ -902,22 +1000,52 @@ export function ClientPortal({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Tipo de Peça</label>
+                <label className="block font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                  <span>Insumo / Peça Base</span>
+                  <span className="text-[10px] text-pink-600 font-medium">Pré-selecionado</span>
+                </label>
                 <select
                   value={pieceType}
                   onChange={(e) => setPieceType(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-xs"
                 >
-                  <option value="Toalha de Banho">Toalha de Banho (Casal / Monograma)</option>
-                  <option value="Toalha de Lavabo">Toalha de Lavabo / Rosto</option>
-                  <option value="Fraldas de Boca / Ombro">Enxoval Bebê / Fralda Cremer</option>
-                  <option value="Jaleco / Uniforme">Jaleco Profissional / Uniforme</option>
-                  <option value="Body Bebê">Body de Bebê Personalizado</option>
-                  <option value="Pano de Prato">Pano de Copa Gourmet</option>
-                  <option value="Outro">Outro item</option>
+                  <optgroup label="Fraldas & Enxoval Bebê">
+                    <option value="Toalha Fralda Cremer 120cm x 70cm">Toalha Fralda Cremer 120x70cm</option>
+                    <option value="Fralda Cremer Luxo 70cm x 70cm">Fralda Cremer Luxo 70x70cm</option>
+                    <option value="Fralda de Boca Cremer 35cm x 35cm">Fralda de Boca Cremer 35x35cm</option>
+                    <option value="Manta Bebê Microfibra / Piquet">Manta Bebê Microfibra</option>
+                    <option value="Body Bebê Manga Curta 100% Algodão">Body Bebê 100% Algodão</option>
+                  </optgroup>
+                  <optgroup label="Banho & Lavabo">
+                    <option value="Toalha de Lavabo Döhler Bella 30x45cm">Toalha de Lavabo Döhler 30x45cm</option>
+                    <option value="Toalha de Banho Döhler Artesanall 70x140cm">Toalha de Banho Döhler 70x140cm</option>
+                    <option value="Jogo de Toalhas Banho + Rosto Döhler">Jogo Banho + Rosto Döhler</option>
+                  </optgroup>
+                  <optgroup label="Cozinha & Outros">
+                    <option value="Pano de Prato Sacaria Pé de Galinha 50x70cm">Pano de Prato Pé de Galinha</option>
+                    <option value="Jaleco Profissional Manga Longa Gabardine">Jaleco Profissional</option>
+                    <option value="Peça fornecida pelo Cliente">Vou fornecer a minha própria peça</option>
+                    <option value="Outro Insumo Personalizado">Outro insumo personalizado</option>
+                  </optgroup>
                 </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                  <span>Quantidade</span>
+                  <span className="text-[10px] text-slate-400">peças</span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  value={pieceQuantity}
+                  onChange={(e) => setPieceQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white font-mono font-bold text-center text-xs"
+                />
               </div>
 
               <div>
@@ -928,7 +1056,7 @@ export function ClientPortal({
                   value={pieceDescription}
                   onChange={(e) => setPieceDescription(e.target.value)}
                   placeholder="Ex: Nome 'Benjamin' com coroa de louros dourada"
-                  className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white"
+                  className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-xs"
                 />
               </div>
             </div>
@@ -1041,6 +1169,7 @@ export function ClientPortal({
               </button>
             </div>
           </form>
+        </div>
         </div>
       )}
 

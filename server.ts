@@ -14,19 +14,24 @@ app.use(express.json());
 // ============================================================================
 let supabase: SupabaseClient | null = null;
 
+function cleanSupabaseUrl(rawUrl: string): string {
+  return rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+}
+
 function getSupabase(): SupabaseClient | null {
   if (supabase) return supabase;
 
-  const supabaseUrl = process.env.SUPABASE_URL;
+  const rawUrl = process.env.SUPABASE_URL;
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!rawUrl || !supabaseAnonKey) {
     return null;
   }
 
   try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-    console.log('[Supabase] Cliente conectado com sucesso a:', supabaseUrl);
+    const cleanUrl = cleanSupabaseUrl(rawUrl);
+    supabase = createClient(cleanUrl, supabaseAnonKey);
+    console.log('[Supabase] Cliente conectado com sucesso a:', cleanUrl);
     return supabase;
   } catch (err) {
     console.error('[Supabase] Falha ao inicializar cliente:', err);

@@ -216,6 +216,9 @@ export default function App() {
           id: `item-${Date.now()}`,
           description: data.description,
           pieceType: 'Peça Personalizada',
+          quantity: 1,
+          unitCost: data.calculatedCost,
+          unitPriceCharged: data.priceCharged,
           clientProvidedPiece: false,
           pieceCost: 0,
           stitchesCount: data.stitches,
@@ -431,6 +434,7 @@ export default function App() {
           orderToEdit={editingOrder}
           onSave={handleSaveOrder}
           onClose={() => setIsOrderModalOpen(false)}
+          availableMaterials={materials}
         />
       )}
 

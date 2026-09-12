@@ -304,19 +304,28 @@ export function OrdersManager({
                   {/* Items column (5 cols) */}
                   <div className="md:col-span-5 space-y-1.5">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                      Itens Bordados ({order.items.length})
+                      Itens Bordados ({order.items.reduce((s, i) => s + (i.quantity || 1), 0)} peças)
                     </span>
-                    <div className="space-y-1">
-                      {order.items.map((it) => (
-                        <div key={it.id} className="text-xs text-slate-700 flex justify-between">
-                          <span className="truncate max-w-[260px]">
-                            • {it.description}
-                          </span>
-                          <span className="font-mono text-slate-500 text-[11px]">
-                            {(it.stitchesCount || 0).toLocaleString('pt-BR')} pts ({it.hoopSize})
-                          </span>
-                        </div>
-                      ))}
+                    <div className="space-y-1.5">
+                      {order.items.map((it) => {
+                        const qty = it.quantity || 1;
+                        return (
+                          <div key={it.id} className="text-xs text-slate-700 flex justify-between items-center bg-slate-50/80 px-2 py-1 rounded-lg border border-slate-100">
+                            <span className="truncate max-w-[260px]">
+                              <span className="font-bold text-rose-700 font-mono mr-1.5 bg-rose-50 px-1.5 py-0.5 rounded text-[11px]">
+                                {qty}x
+                              </span>
+                              <strong className="text-slate-800">{it.pieceType || it.description}</strong>
+                              {it.description && it.pieceType && it.pieceType !== it.description && (
+                                <span className="text-slate-500 font-normal ml-1">({it.description})</span>
+                              )}
+                            </span>
+                            <span className="font-mono text-slate-500 text-[11px] shrink-0 ml-2">
+                              {(it.stitchesCount || 0).toLocaleString('pt-BR')} pts
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 

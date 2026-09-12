@@ -219,6 +219,35 @@ CREATE POLICY "Permitir exclusão de produtos" ON produtos FOR DELETE USING (tru
         )}
       </div>
 
+      {/* Banner de Tabela Pendente no Supabase */}
+      {statusConexao.mensagem?.includes('Could not find the table') && (
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 shadow-sm space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-xs font-bold text-amber-900">
+                  Conexão com o Supabase autenticada! Falta apenas criar a tabela produtos.
+                </h4>
+                <p className="text-[11px] text-amber-800 mt-0.5">
+                  Seu projeto <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-amber-900">{statusConexao.url}</code> foi conectado com sucesso via token anon. Para ativar a gravação e leitura, execute o comando SQL abaixo no seu painel do Supabase (aba <strong>SQL Editor</strong>):
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleCopySql}
+              className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-xs"
+            >
+              {copiedSql ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedSql ? 'Copiado!' : 'Copiar Script SQL'}
+            </button>
+          </div>
+          <pre className="text-[11px] font-mono bg-slate-900 text-emerald-300 p-3 rounded-xl overflow-x-auto border border-slate-800">
+            {sqlCode}
+          </pre>
+        </div>
+      )}
+
       {/* Alerta de Guia SQL caso queira copiar */}
       {showSqlGuide && (
         <div className="p-4 rounded-2xl bg-slate-900 text-slate-100 border border-slate-700 shadow-md space-y-2 animate-in fade-in duration-200">

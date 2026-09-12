@@ -207,40 +207,55 @@ export function PdfDocumentModal({
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-slate-300 bg-slate-100 text-slate-700 font-bold">
-                    <th className="py-2 px-3">Item / Descrição</th>
+                    <th className="py-2 px-3">Item / Insumo</th>
+                    <th className="py-2 px-2 text-center">Qtd</th>
                     <th className="py-2 px-3 text-center">Bastidor</th>
-                    <th className="py-2 px-3 text-right">Pontos</th>
-                    <th className="py-2 px-3 text-right">Valor</th>
+                    <th className="py-2 px-3 text-right">Pontos (.PES)</th>
+                    <th className="py-2 px-3 text-right">Unitário</th>
+                    <th className="py-2 px-3 text-right">Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {order.items.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50">
-                      <td className="py-3 px-3">
-                        <div className="font-bold text-slate-900">{item.description}</div>
-                        <div className="text-[11px] text-slate-500">
-                          {item.pieceType} • {item.clientProvidedPiece ? 'Peça do cliente' : 'Peça fornecida pelo ateliê'}
-                        </div>
-                        {docType === 'os' && item.threadColorsList && item.threadColorsList.length > 0 && (
-                          <div className="text-[10px] text-rose-700 mt-1 font-mono">
-                            🧵 Linhas: {item.threadColorsList.join(' | ')}
+                  {order.items.map((item) => {
+                    const qty = item.quantity || 1;
+                    const unitPrice = item.unitPriceCharged || (item.priceCharged / qty);
+                    return (
+                      <tr key={item.id} className="hover:bg-slate-50/50">
+                        <td className="py-3 px-3">
+                          <div className="font-bold text-slate-900">{item.pieceType || item.description}</div>
+                          {item.description && item.description !== item.pieceType && (
+                            <div className="text-[11px] text-slate-600 italic">{item.description}</div>
+                          )}
+                          <div className="text-[11px] text-slate-500">
+                            {item.clientProvidedPiece ? 'Peça fornecida pelo cliente (custo zero)' : 'Insumo fornecido pelo ateliê'}
                           </div>
-                        )}
-                        {docType === 'os' && item.matrixName && (
-                          <div className="text-[10px] text-slate-500 font-mono">
-                            💾 Arquivo: {item.matrixName}
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 text-center font-medium">{item.hoopSize}</td>
-                      <td className="py-3 px-3 text-right font-mono">
-                        {(item.stitchesCount || 0).toLocaleString('pt-BR')}
-                      </td>
-                      <td className="py-3 px-3 text-right font-bold text-slate-900">
-                        {formatCurrencyBRL(item.priceCharged)}
-                      </td>
-                    </tr>
-                  ))}
+                          {docType === 'os' && item.threadColorsList && item.threadColorsList.length > 0 && (
+                            <div className="text-[10px] text-rose-700 mt-1 font-mono">
+                              🧵 Linhas: {item.threadColorsList.join(' | ')}
+                            </div>
+                          )}
+                          {docType === 'os' && item.matrixName && (
+                            <div className="text-[10px] text-slate-500 font-mono">
+                              💾 Arquivo: {item.matrixName}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-2 text-center font-bold text-slate-800 font-mono">
+                          {qty}
+                        </td>
+                        <td className="py-3 px-3 text-center font-medium">{item.hoopSize}</td>
+                        <td className="py-3 px-3 text-right font-mono">
+                          {(item.stitchesCount || 0).toLocaleString('pt-BR')}
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono text-slate-700">
+                          {formatCurrencyBRL(unitPrice)}
+                        </td>
+                        <td className="py-3 px-3 text-right font-bold text-slate-900 font-mono">
+                          {formatCurrencyBRL(item.priceCharged)}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

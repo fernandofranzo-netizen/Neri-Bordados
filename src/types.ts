@@ -24,15 +24,18 @@ export interface InspirationItem {
 export interface EmbroideryItem {
   id: string;
   description: string; // Ex: "Toalha de Banho com Nome + Ramo de Flores"
-  pieceType: string;   // Ex: "Toalha de Banho", "Fralda", "Body Bebê", "Pano de Prato"
+  pieceType: string;   // Insumo selecionado (ex: "Toalha Fralda Cremer 120cm x 70cm")
+  quantity: number;    // Quantidade de peças a ser produzida (ex: 3)
+  unitCost: number;    // Custo de produção por peça (ex: R$ 22,50)
+  unitPriceCharged?: number; // Preço unitário cobrado por peça (ex: R$ 55,00)
   clientProvidedPiece: boolean; // Se o cliente trouxe a peça ou o ateliê forneceu
-  pieceCost: number;   // Custo da peça base
+  pieceCost: number;   // Custo da peça/insumo base unitário
   stitchesCount: number; // Quantidade de pontos (ex: 18500)
   hoopSize: string;    // Ex: "13x18 cm", "10x10 cm", "16x26 cm"
   threadColorsCount: number; // Qtd de trocas de cores
   threadColorsList?: string[]; // Ex: ["Polybrilho 2145 Ouro", "Lumina 401 Branco"]
-  calculatedCost: number; // Custo de materiais + máquina
-  priceCharged: number;   // Preço cobrado do cliente
+  calculatedCost: number; // Custo total de produção (Custo por peça x Quantidade)
+  priceCharged: number;   // Preço total cobrado do cliente
   matrixName?: string;    // Nome do arquivo de matriz ex: "floresta_13x18.pes"
 }
 
