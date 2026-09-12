@@ -1,7 +1,14 @@
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { Lock, Eye, EyeOff, ShieldAlert, KeyRound, Check, X, Smartphone, MessageCircle } from 'lucide-react';
 import { NeriLogo } from './NeriLogo';
-import { openSMSNotification, openWhatsAppNotification, ATELIER_WHATSAPP_RAW, ATELIER_PHONE_DISPLAY } from '../utils/whatsappHelper';
+import {
+  openSMSNotification,
+  openWhatsAppNotification,
+  ATELIER_WHATSAPP_RAW,
+  ATELIER_PHONE_DISPLAY,
+  ATELIER_SMS_RAW,
+  ATELIER_SMS_PHONE_DISPLAY,
+} from '../utils/whatsappHelper';
 
 interface AtelierAuthModalProps {
   isOpen: boolean;
@@ -56,7 +63,7 @@ export function AtelierAuthModal({
   const handleForgotPasswordViaSMS = () => {
     setError('');
     const smsMessage = `Ateliê Neri Bordados: Sua senha de acesso ao sistema é: ${currentPassword}`;
-    openSMSNotification('5584988307080', smsMessage);
+    openSMSNotification(ATELIER_SMS_RAW, smsMessage);
     setSentViaSMS(true);
   };
 
@@ -153,7 +160,7 @@ export function AtelierAuthModal({
                 <div className="leading-relaxed space-y-1">
                   <p className="font-bold text-cyan-900">Mensagem SMS enviada!</p>
                   <p className="text-[11px] text-cyan-700">
-                    A mensagem SMS com sua senha de acesso foi gerada para o número <strong>5584988307080</strong> ({ATELIER_PHONE_DISPLAY}).
+                    A mensagem SMS com sua senha de acesso foi gerada para o número <strong>{ATELIER_SMS_RAW}</strong> ({ATELIER_SMS_PHONE_DISPLAY}).
                   </p>
                   <div className="pt-1">
                     <button
@@ -186,7 +193,7 @@ export function AtelierAuthModal({
                   id="btn-forgot-password-sms"
                   onClick={handleForgotPasswordViaSMS}
                   className="text-cyan-800 hover:text-cyan-950 font-bold flex items-center gap-1.5 transition-colors group py-1"
-                  title="Enviar senha de acesso por SMS para o número 5584988307080"
+                  title={`Enviar senha de acesso por SMS para o número ${ATELIER_SMS_RAW} (${ATELIER_SMS_PHONE_DISPLAY})`}
                 >
                   <Smartphone className="w-4 h-4 text-cyan-600 group-hover:scale-110 transition-transform" />
                   <span>Esqueci a senha</span>

@@ -4,6 +4,8 @@ import { formatCurrencyBRL } from './calculator';
 export const ATELIER_PIX_KEY = 'contato@neribordados.com.br';
 export const ATELIER_WHATSAPP_RAW = '5584988307080';
 export const ATELIER_PHONE_DISPLAY = '(84) 98830-7080';
+export const ATELIER_SMS_RAW = '5584991548140';
+export const ATELIER_SMS_PHONE_DISPLAY = '(84) 99154-8140';
 export const ATELIER_INSTAGRAM_HANDLE = '@neribordados';
 export const ATELIER_INSTAGRAM_URL = 'https://www.instagram.com/neribordados';
 export const ATELIER_FACEBOOK_URL = 'https://www.facebook.com/nerialba.mendes/';
