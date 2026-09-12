@@ -28,7 +28,8 @@ import {
   Share2,
   MessageCircle,
   Instagram,
-  Facebook
+  Facebook,
+  Play
 } from 'lucide-react';
 import { Order, ChatMessage, InspirationItem, OrderStatus } from '../types';
 import { formatCurrencyBRL } from '../utils/calculator';
@@ -55,6 +56,7 @@ interface ClientPortalProps {
   isAtelierAuthenticated?: boolean;
   onRequestAtelierLogin?: () => void;
   onReturnToAtelier?: () => void;
+  onOpenPresentationTour?: () => void;
 }
 
 export function ClientPortal({
@@ -65,6 +67,7 @@ export function ClientPortal({
   isAtelierAuthenticated,
   onRequestAtelierLogin,
   onReturnToAtelier,
+  onOpenPresentationTour,
 }: ClientPortalProps) {
   const [trackingSearch, setTrackingSearch] = useState('');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -406,6 +409,36 @@ export function ClientPortal({
           </button>
         </form>
       </div>
+
+      {/* Project Presentation Tour Invitation Bar */}
+      {onOpenPresentationTour && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 border border-purple-500/30 text-white shadow-md">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 shrink-0">
+              <Play className="w-4 h-4 fill-purple-400" />
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                Apresentação Interativa do Projeto
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/30 text-purple-200 border border-purple-400/30">
+                  Vídeo Tour & Roteiro
+                </span>
+              </p>
+              <p className="text-[11px] text-purple-200/75 mt-0.5">
+                Conheça em formato de apresentação guiada o fluxo completo: catálogo, máquina Brother, regras de Pix e segurança SMS.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenPresentationTour}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 shrink-0"
+          >
+            <Play className="w-3.5 h-3.5 fill-white" />
+            <span>Assistir Apresentação</span>
+          </button>
+        </div>
+      )}
 
       {/* Order Tracking View (Visible when active tab is tracking and order is matched or created) */}
       {activeTab === 'tracking' && selectedOrder && (

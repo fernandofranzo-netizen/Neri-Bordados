@@ -1,4 +1,4 @@
-import { Bell, Plus, Calendar, Package, DollarSign, Calculator, Layers, UserCheck, Lock, LogOut, Shield, Database } from 'lucide-react';
+import { Bell, Calendar, Package, DollarSign, Calculator, Layers, UserCheck, Lock, LogOut, Shield, Database, Play } from 'lucide-react';
 import { NeriLogo } from './NeriLogo';
 
 interface NavbarProps {
@@ -9,11 +9,12 @@ interface NavbarProps {
   isAtelierAuthenticated: boolean;
   onRequestAtelierLogin: () => void;
   onLogoutAtelier: () => void;
-  onOpenNewOrder: () => void;
+  onOpenNewOrder?: () => void;
   notificationCount: number;
   onOpenNotifications: () => void;
   urgentOrdersCount: number;
   pendingPaymentsCount: number;
+  onOpenPresentationTour?: () => void;
 }
 
 export function Navbar({
@@ -29,6 +30,7 @@ export function Navbar({
   onOpenNotifications,
   urgentOrdersCount,
   pendingPaymentsCount,
+  onOpenPresentationTour,
 }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cyan-100 shadow-xs">
@@ -143,7 +145,20 @@ export function Navbar({
           )}
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Project Presentation Tour Button */}
+            {onOpenPresentationTour && (
+              <button
+                id="btn-navbar-tour"
+                onClick={onOpenPresentationTour}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-800 text-white text-xs font-bold shadow-xs hover:shadow transition-all group"
+                title="Apresentação em Vídeo / Tour Guiado do Sistema"
+              >
+                <Play className="w-3.5 h-3.5 fill-white group-hover:scale-110 transition-transform" />
+                <span className="hidden xs:inline">Apresentação</span>
+              </button>
+            )}
+
             {/* If authenticated as Atelier: Show BOTH environments (Ateliê and Portal Cliente) */}
             {isAtelierAuthenticated ? (
               <>
@@ -189,18 +204,6 @@ export function Navbar({
                     </span>
                   )}
                 </button>
-
-                {/* New Order Button in Admin view */}
-                {viewMode === 'admin' && (
-                  <button
-                    id="btn-new-order-navbar"
-                    onClick={onOpenNewOrder}
-                    className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-teal-700 hover:from-cyan-700 hover:to-teal-800 text-white text-xs font-semibold shadow-sm hover:shadow transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Novo Pedido
-                  </button>
-                )}
 
                 {/* Lock / Logout Atelier Button */}
                 <button

@@ -8,21 +8,12 @@ import {
   Check,
   X,
   Smartphone,
-  MessageCircle,
   ArrowLeft,
   ShieldCheck,
   Copy,
   CheckCheck,
 } from 'lucide-react';
 import { NeriLogo } from './NeriLogo';
-import {
-  openSMSNotification,
-  openWhatsAppNotification,
-  ATELIER_WHATSAPP_RAW,
-  ATELIER_PHONE_DISPLAY,
-  ATELIER_SMS_RAW,
-  ATELIER_SMS_PHONE_DISPLAY,
-} from '../utils/whatsappHelper';
 
 const AUTHORIZED_CPF = '06169721480';
 
@@ -58,7 +49,6 @@ export function AtelierAuthModal({
   const [cpfError, setCpfError] = useState('');
   const [isCpfVerified, setIsCpfVerified] = useState(false);
   const [copiedPassword, setCopiedPassword] = useState(false);
-  const [sentViaSMS, setSentViaSMS] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const cpfInputRef = useRef<HTMLInputElement>(null);
@@ -72,7 +62,6 @@ export function AtelierAuthModal({
       setCpfError('');
       setIsCpfVerified(false);
       setCopiedPassword(false);
-      setSentViaSMS(false);
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
@@ -129,22 +118,6 @@ export function AtelierAuthModal({
       setCopiedPassword(true);
       setTimeout(() => setCopiedPassword(false), 2500);
     }
-  };
-
-  const handleSendViaSMS = () => {
-    const smsMessage = `Ateliê Neri Bordados: Sua senha de acesso ao sistema é: ${currentPassword}`;
-    openSMSNotification(ATELIER_SMS_RAW, smsMessage);
-    setSentViaSMS(true);
-  };
-
-  const handleWhatsAppFallback = () => {
-    const message =
-      `Olá Ateliê Neri Bordados! 🔐🧵\n\n` +
-      `Aqui está a sua *Senha de Acesso ao Sistema*:\n\n` +
-      `🔑 *Senha de Acesso:* ${currentPassword}\n\n` +
-      `Utilize esta senha para desbloquear o painel administrativo do ateliê.\n\n` +
-      `_Ateliê Neri Bordados Computadorizados_ ✨`;
-    openWhatsAppNotification(ATELIER_WHATSAPP_RAW, message);
   };
 
   const handleUnlockDirectly = () => {
@@ -391,37 +364,6 @@ export function AtelierAuthModal({
                     )}
                   </button>
                 </div>
-              </div>
-
-              {/* SMS & WhatsApp Options */}
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
-                <span className="font-bold text-slate-700 block text-[11px]">
-                  Deseja receber esta senha também no celular?
-                </span>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleSendViaSMS}
-                    className="flex-1 py-1.5 px-2.5 rounded-lg bg-white border border-slate-300 hover:border-cyan-400 text-slate-700 hover:text-cyan-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-                  >
-                    <Smartphone className="w-3.5 h-3.5 text-cyan-600" />
-                    <span>SMS para {ATELIER_SMS_PHONE_DISPLAY}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleWhatsAppFallback}
-                    className="flex-1 py-1.5 px-2.5 rounded-lg bg-white border border-slate-300 hover:border-emerald-400 text-slate-700 hover:text-emerald-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>WhatsApp</span>
-                  </button>
-                </div>
-                {sentViaSMS && (
-                  <p className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 pt-1">
-                    <Check className="w-3.5 h-3.5" /> SMS enviado com sucesso para {ATELIER_SMS_PHONE_DISPLAY}!
-                  </p>
-                )}
               </div>
 
               {/* Primary Direct Unlock Button */}

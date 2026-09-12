@@ -13,6 +13,7 @@ import { NotificationCenter } from './components/NotificationCenter';
 import { PdfDocumentModal } from './components/PdfDocumentModal';
 import { AtelierAuthModal } from './components/AtelierAuthModal';
 import { SupabaseProductsManager } from './components/SupabaseProductsManager';
+import { ProjectPresentationModal } from './components/ProjectPresentationModal';
 
 import { 
   Order, 
@@ -128,6 +129,30 @@ export default function App() {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [pdfOrder, setPdfOrder] = useState<Order | null>(null);
   const [pdfType, setPdfType] = useState<'orcamento' | 'os' | 'recibo'>('orcamento');
+
+  const [isPresentationModalOpen, setIsPresentationModalOpen] = useState(false);
+
+  // Handler: Direct navigation from the guided presentation slides
+  const handleNavigateFromTour = (destination: {
+    viewMode?: 'admin' | 'client';
+    tab?: 'dashboard' | 'orders' | 'calculator' | 'inventory' | 'calendar' | 'financial' | 'products';
+    openAuth?: boolean;
+  }) => {
+    if (destination.openAuth) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    if (destination.viewMode) {
+      if (destination.viewMode === 'admin' && !isAtelierAuthenticated) {
+        setIsAuthModalOpen(true);
+        return;
+      }
+      setViewMode(destination.viewMode);
+    }
+    if (destination.tab) {
+      setCurrentTab(destination.tab);
+    }
+  };
 
   // Compute unread/urgent notifications count
   const urgentDeliveriesCount = orders.filter(
@@ -318,6 +343,7 @@ export default function App() {
         notificationCount={totalAlertsCount}
         urgentOrdersCount={urgentDeliveriesCount}
         pendingPaymentsCount={pendingPaymentsCount}
+        onOpenPresentationTour={() => setIsPresentationModalOpen(true)}
       />
 
       {/* Atelier Staff Preview Ribbon when viewing Client Portal */}
@@ -362,6 +388,7 @@ export default function App() {
             isAtelierAuthenticated={isAtelierAuthenticated}
             onRequestAtelierLogin={handleRequestAtelierLogin}
             onReturnToAtelier={() => setViewMode('admin')}
+            onOpenPresentationTour={() => setIsPresentationModalOpen(true)}
           />
         ) : (
           /* Atelier Admin Views */
@@ -482,6 +509,13 @@ export default function App() {
         onSuccess={handleAuthSuccess}
         currentPassword={atelierPassword}
         onUpdatePassword={handleUpdatePassword}
+      />
+
+      {/* Project Presentation Video Tour Modal */}
+      <ProjectPresentationModal
+        isOpen={isPresentationModalOpen}
+        onClose={() => setIsPresentationModalOpen(false)}
+        onNavigateTo={handleNavigateFromTour}
       />
     </div>
   );
