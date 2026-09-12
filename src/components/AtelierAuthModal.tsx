@@ -1,7 +1,7 @@
 import { useState, FormEvent, useEffect, useRef } from 'react';
-import { Lock, Eye, EyeOff, ShieldAlert, KeyRound, Check, X, MessageCircle } from 'lucide-react';
+import { Lock, Eye, EyeOff, ShieldAlert, KeyRound, Check, X, Smartphone, MessageCircle } from 'lucide-react';
 import { NeriLogo } from './NeriLogo';
-import { openWhatsAppNotification, ATELIER_WHATSAPP_RAW, ATELIER_PHONE_DISPLAY } from '../utils/whatsappHelper';
+import { openSMSNotification, openWhatsAppNotification, ATELIER_WHATSAPP_RAW, ATELIER_PHONE_DISPLAY } from '../utils/whatsappHelper';
 
 interface AtelierAuthModalProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ export function AtelierAuthModal({
   const [enteredPassword, setEnteredPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [sentToWhatsApp, setSentToWhatsApp] = useState(false);
+  const [sentViaSMS, setSentViaSMS] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -28,7 +28,7 @@ export function AtelierAuthModal({
     if (isOpen) {
       setEnteredPassword('');
       setError('');
-      setSentToWhatsApp(false);
+      setSentViaSMS(false);
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
@@ -49,21 +49,25 @@ export function AtelierAuthModal({
       onSuccess();
       onClose();
     } else {
-      setError('Senha incorreta. Verifique os dados ou solicite o envio pelo WhatsApp.');
+      setError('Senha incorreta. Verifique os dados ou clique em "Esqueci a senha" para receber por SMS.');
     }
   };
 
-  const handleSendPasswordToWhatsApp = () => {
+  const handleForgotPasswordViaSMS = () => {
     setError('');
+    const smsMessage = `Ateliê Neri Bordados: Sua senha de acesso ao sistema é: ${currentPassword}`;
+    openSMSNotification('5584988307080', smsMessage);
+    setSentViaSMS(true);
+  };
+
+  const handleWhatsAppFallback = () => {
     const message =
       `Olá Ateliê Neri Bordados! 🔐🧵\n\n` +
       `Aqui está a sua *Senha de Acesso ao Sistema*:\n\n` +
       `🔑 *Senha de Acesso:* ${currentPassword}\n\n` +
-      `Utilize esta senha para desbloquear a gestão de pedidos, cálculos, estoque e relatórios no painel administrativo.\n\n` +
+      `Utilize esta senha para desbloquear o painel administrativo do ateliê.\n\n` +
       `_Ateliê Neri Bordados Computadorizados_ ✨`;
-
     openWhatsAppNotification(ATELIER_WHATSAPP_RAW, message);
-    setSentToWhatsApp(true);
   };
 
   return (
@@ -142,15 +146,25 @@ export function AtelierAuthModal({
               )}
             </div>
 
-            {/* Notification when password was sent to WhatsApp */}
-            {sentToWhatsApp && (
-              <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl flex items-start gap-2.5 text-xs text-emerald-950 animate-in fade-in duration-200">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <div className="leading-relaxed">
-                  <p className="font-bold text-emerald-900">Senha enviada para o WhatsApp!</p>
-                  <p className="text-[11px] text-emerald-700 mt-0.5">
-                    A senha de acesso foi enviada para o número <strong>{ATELIER_PHONE_DISPLAY}</strong>. Verifique seu aplicativo WhatsApp.
+            {/* Notification when password was sent via SMS */}
+            {sentViaSMS && (
+              <div className="p-3 bg-cyan-50 border border-cyan-300 rounded-xl flex items-start gap-2.5 text-xs text-cyan-950 animate-in fade-in duration-200">
+                <Check className="w-4 h-4 text-cyan-700 shrink-0 mt-0.5" />
+                <div className="leading-relaxed space-y-1">
+                  <p className="font-bold text-cyan-900">Mensagem SMS enviada!</p>
+                  <p className="text-[11px] text-cyan-700">
+                    A mensagem SMS com sua senha de acesso foi gerada para o número <strong>5584988307080</strong> ({ATELIER_PHONE_DISPLAY}).
                   </p>
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={handleWhatsAppFallback}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 underline"
+                    >
+                      <MessageCircle className="w-3 h-3 text-emerald-600" />
+                      Receber também pelo WhatsApp
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -169,12 +183,13 @@ export function AtelierAuthModal({
               <div className="flex items-center justify-between pt-2 text-xs">
                 <button
                   type="button"
-                  onClick={handleSendPasswordToWhatsApp}
-                  className="text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1.5 transition-colors group py-1"
-                  title={`Enviar senha de acesso para o WhatsApp ${ATELIER_PHONE_DISPLAY}`}
+                  id="btn-forgot-password-sms"
+                  onClick={handleForgotPasswordViaSMS}
+                  className="text-cyan-800 hover:text-cyan-950 font-bold flex items-center gap-1.5 transition-colors group py-1"
+                  title="Enviar senha de acesso por SMS para o número 5584988307080"
                 >
-                  <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-100 group-hover:scale-110 transition-transform" />
-                  <span>Alterar senha</span>
+                  <Smartphone className="w-4 h-4 text-cyan-600 group-hover:scale-110 transition-transform" />
+                  <span>Esqueci a senha</span>
                 </button>
                 <button
                   type="button"

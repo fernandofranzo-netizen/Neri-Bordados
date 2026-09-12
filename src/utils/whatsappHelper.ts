@@ -139,3 +139,27 @@ export function openAtelierDirectWhatsApp(customMessage?: string): void {
   const text = customMessage || 'Olá Ateliê Neri Bordados! Gostaria de tirar uma dúvida sobre bordados computadorizados.';
   openWhatsAppNotification(ATELIER_WHATSAPP_RAW, text);
 }
+
+/**
+ * Abre o aplicativo nativo de SMS do dispositivo com destinatário e mensagem pré-formatados
+ */
+export function openSMSNotification(phoneNumber: string, message: string): void {
+  const cleanNumber = phoneNumber.replace(/\D/g, '');
+  const encodedText = encodeURIComponent(message);
+  
+  // No iOS o separador de query string do protocolo sms: costuma ser '&', enquanto Android e RFC utilizam '?'
+  const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const delimiter = isIOS ? '&' : '?';
+  const smsUrl = `sms:+${cleanNumber}${delimiter}body=${encodedText}`;
+
+  try {
+    const link = document.createElement('a');
+    link.href = smsUrl;
+    link.target = '_self';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch {
+    window.location.href = smsUrl;
+  }
+}
