@@ -1,5 +1,19 @@
 import { useState, FormEvent, useEffect, useRef } from 'react';
-import { Lock, Eye, EyeOff, ShieldAlert, KeyRound, Check, X, Smartphone, MessageCircle } from 'lucide-react';
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  ShieldAlert,
+  KeyRound,
+  Check,
+  X,
+  Smartphone,
+  MessageCircle,
+  ArrowLeft,
+  ShieldCheck,
+  Copy,
+  CheckCheck,
+} from 'lucide-react';
 import { NeriLogo } from './NeriLogo';
 import {
   openSMSNotification,
@@ -9,6 +23,16 @@ import {
   ATELIER_SMS_RAW,
   ATELIER_SMS_PHONE_DISPLAY,
 } from '../utils/whatsappHelper';
+
+const AUTHORIZED_CPF = '06169721480';
+
+function formatCPF(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
+}
 
 interface AtelierAuthModalProps {
   isOpen: boolean;
@@ -24,23 +48,44 @@ export function AtelierAuthModal({
   onSuccess,
   currentPassword,
 }: AtelierAuthModalProps) {
+  const [authMode, setAuthMode] = useState<'login' | 'forgot_password'>('login');
   const [enteredPassword, setEnteredPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+
+  // CPF verification states
+  const [cpfInput, setCpfInput] = useState('');
+  const [cpfError, setCpfError] = useState('');
+  const [isCpfVerified, setIsCpfVerified] = useState(false);
+  const [copiedPassword, setCopiedPassword] = useState(false);
   const [sentViaSMS, setSentViaSMS] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const cpfInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
+      setAuthMode('login');
       setEnteredPassword('');
       setError('');
+      setCpfInput('');
+      setCpfError('');
+      setIsCpfVerified(false);
+      setCopiedPassword(false);
       setSentViaSMS(false);
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (authMode === 'forgot_password' && !isCpfVerified) {
+      setTimeout(() => {
+        cpfInputRef.current?.focus();
+      }, 100);
+    }
+  }, [authMode, isCpfVerified]);
 
   if (!isOpen) return null;
 
@@ -56,12 +101,37 @@ export function AtelierAuthModal({
       onSuccess();
       onClose();
     } else {
-      setError('Senha incorreta. Verifique os dados ou clique em "Esqueci a senha" para receber por SMS.');
+      setError('Senha incorreta. Verifique os dados ou clique em "Esqueci a senha".');
     }
   };
 
-  const handleForgotPasswordViaSMS = () => {
-    setError('');
+  const handleCpfVerification = (e: FormEvent) => {
+    e.preventDefault();
+    setCpfError('');
+    const rawCpf = cpfInput.replace(/\D/g, '');
+
+    if (!rawCpf) {
+      setCpfError('Por favor, digite o número do seu CPF.');
+      return;
+    }
+
+    if (rawCpf === AUTHORIZED_CPF) {
+      setIsCpfVerified(true);
+      setCpfError('');
+    } else {
+      setCpfError('CPF não autorizado ou incorreto. Por favor, verifique o número digitado.');
+    }
+  };
+
+  const handleCopyPassword = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(currentPassword);
+      setCopiedPassword(true);
+      setTimeout(() => setCopiedPassword(false), 2500);
+    }
+  };
+
+  const handleSendViaSMS = () => {
     const smsMessage = `Ateliê Neri Bordados: Sua senha de acesso ao sistema é: ${currentPassword}`;
     openSMSNotification(ATELIER_SMS_RAW, smsMessage);
     setSentViaSMS(true);
@@ -75,6 +145,11 @@ export function AtelierAuthModal({
       `Utilize esta senha para desbloquear o painel administrativo do ateliê.\n\n` +
       `_Ateliê Neri Bordados Computadorizados_ ✨`;
     openWhatsAppNotification(ATELIER_WHATSAPP_RAW, message);
+  };
+
+  const handleUnlockDirectly = () => {
+    onSuccess();
+    onClose();
   };
 
   return (
@@ -102,114 +177,281 @@ export function AtelierAuthModal({
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-200 border border-cyan-400/30 mb-2">
-            <Lock className="w-3 h-3 text-cyan-300" />
-            Ambiente Seguro do Ateliê
+            {authMode === 'login' ? (
+              <>
+                <Lock className="w-3 h-3 text-cyan-300" />
+                Ambiente Seguro do Ateliê
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="w-3 h-3 text-cyan-300" />
+                Recuperação de Acesso
+              </>
+            )}
           </div>
 
           <h3 className="text-xl font-bold text-white font-display">
-            Acesso Restrito ao Ateliê
+            {authMode === 'login'
+              ? 'Acesso Restrito ao Ateliê'
+              : isCpfVerified
+              ? 'Senha Liberada'
+              : 'Esqueci a Senha'}
           </h3>
           <p className="text-xs text-cyan-100/75 mt-1 max-w-xs mx-auto">
-            Digite sua senha para desbloquear a gestão de pedidos, cálculos, estoque e relatórios.
+            {authMode === 'login'
+              ? 'Digite sua senha para desbloquear a gestão de pedidos, cálculos, estoque e relatórios.'
+              : isCpfVerified
+              ? 'Identidade confirmada com sucesso pelo CPF cadastrado.'
+              : 'Para sua segurança, informe seu CPF para consultar a senha de acesso.'}
           </p>
         </div>
 
         {/* Modal Body */}
         <div className="p-6 space-y-4">
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Senha de Acesso
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <KeyRound className="w-4 h-4" />
+          {authMode === 'login' ? (
+            /* Login Form */
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Senha de Acesso
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <input
+                    ref={inputRef}
+                    type={showPassword ? 'text' : 'password'}
+                    value={enteredPassword}
+                    onChange={(e) => {
+                      setEnteredPassword(e.target.value);
+                      if (error) setError('');
+                    }}
+                    placeholder="Digite a senha..."
+                    className="w-full pl-10 pr-11 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
-                <input
-                  ref={inputRef}
-                  type={showPassword ? 'text' : 'password'}
-                  value={enteredPassword}
-                  onChange={(e) => {
-                    setEnteredPassword(e.target.value);
-                    if (error) setError('');
-                  }}
-                  placeholder="Digite a senha..."
-                  className="w-full pl-10 pr-11 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all font-mono"
-                />
+                {error && (
+                  <p className="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1">
+                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                    {error}
+                  </p>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="pt-2 flex flex-col gap-2">
+                <button
+                  type="submit"
+                  id="btn-confirm-atelier-auth"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-700 hover:from-cyan-700 hover:to-teal-800 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <Lock className="w-4 h-4" />
+                  Desbloquear e Entrar no Ateliê
+                </button>
+
+                <div className="flex items-center justify-between pt-2 text-xs">
+                  <button
+                    type="button"
+                    id="btn-forgot-password-flow"
+                    onClick={() => {
+                      setError('');
+                      setAuthMode('forgot_password');
+                    }}
+                    className="text-cyan-800 hover:text-cyan-950 font-bold flex items-center gap-1.5 transition-colors group py-1"
+                  >
+                    <Smartphone className="w-4 h-4 text-cyan-600 group-hover:scale-110 transition-transform" />
+                    <span>Esqueci a senha</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="text-slate-500 hover:text-slate-800 font-medium transition-colors py-1"
+                  >
+                    Continuar como Cliente
+                  </button>
+                </div>
+              </div>
+            </form>
+          ) : !isCpfVerified ? (
+            /* Forgot Password: CPF Verification Step */
+            <form onSubmit={handleCpfVerification} className="space-y-4 animate-in fade-in duration-150">
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1 text-left">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                  <ShieldCheck className="w-4 h-4 text-cyan-600" />
+                  <span>Pergunta de Segurança:</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Por favor, informe o <strong>número do seu CPF</strong> para validar a titularidade e liberar a sua senha de acesso:
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Número de CPF
+                </label>
+                <div className="relative">
+                  <input
+                    ref={cpfInputRef}
+                    type="text"
+                    inputMode="numeric"
+                    value={cpfInput}
+                    onChange={(e) => {
+                      setCpfInput(formatCPF(e.target.value));
+                      if (cpfError) setCpfError('');
+                    }}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base font-mono text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 tracking-wider font-bold text-center transition-all"
+                  />
+                </div>
+                {cpfError && (
+                  <p className="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1">
+                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                    {cpfError}
+                  </p>
+                )}
+              </div>
+
+              <div className="pt-2 space-y-2">
+                <button
+                  type="submit"
+                  id="btn-verify-cpf"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-700 hover:from-cyan-700 hover:to-teal-800 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  Verificar CPF e Liberar Senha
+                </button>
+
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                  tabIndex={-1}
+                  onClick={() => {
+                    setCpfError('');
+                    setAuthMode('login');
+                  }}
+                  className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  Voltar para o Login
                 </button>
               </div>
-              {error && (
-                <p className="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1">
-                  <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
-                  {error}
-                </p>
-              )}
-            </div>
-
-            {/* Notification when password was sent via SMS */}
-            {sentViaSMS && (
-              <div className="p-3 bg-cyan-50 border border-cyan-300 rounded-xl flex items-start gap-2.5 text-xs text-cyan-950 animate-in fade-in duration-200">
-                <Check className="w-4 h-4 text-cyan-700 shrink-0 mt-0.5" />
-                <div className="leading-relaxed space-y-1">
-                  <p className="font-bold text-cyan-900">Mensagem SMS enviada!</p>
-                  <p className="text-[11px] text-cyan-700">
-                    A mensagem SMS com sua senha de acesso foi gerada para o número <strong>{ATELIER_SMS_RAW}</strong> ({ATELIER_SMS_PHONE_DISPLAY}).
-                  </p>
-                  <div className="pt-1">
-                    <button
-                      type="button"
-                      onClick={handleWhatsAppFallback}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 underline"
-                    >
-                      <MessageCircle className="w-3 h-3 text-emerald-600" />
-                      Receber também pelo WhatsApp
-                    </button>
+            </form>
+          ) : (
+            /* Forgot Password: Password Revealed Step (after CPF 06169721480 is verified) */
+            <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl space-y-3">
+                <div className="flex items-center gap-2 text-emerald-900">
+                  <div className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
+                    <Check className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-extrabold uppercase tracking-wide">
+                      CPF Validado com Sucesso!
+                    </h4>
+                    <p className="text-[11px] text-emerald-700">
+                      Sua senha de acesso ao sistema do ateliê é:
+                    </p>
                   </div>
                 </div>
+
+                {/* Password display card */}
+                <div className="bg-white p-3.5 rounded-xl border border-emerald-200 flex items-center justify-between gap-2 shadow-xs">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                      Senha de Acesso:
+                    </span>
+                    <p className="font-mono text-xl font-black text-cyan-900 tracking-widest select-all">
+                      {currentPassword}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyPassword}
+                    className="px-3 py-2 rounded-lg bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-800 text-xs font-bold flex items-center gap-1.5 border border-slate-200 hover:border-cyan-300 transition-all shrink-0"
+                    title="Copiar senha para a área de transferência"
+                  >
+                    {copiedPassword ? (
+                      <>
+                        <CheckCheck className="w-4 h-4 text-emerald-600" />
+                        <span className="text-emerald-700">Copiada!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-            )}
 
-            {/* Actions */}
-            <div className="pt-2 flex flex-col gap-2">
-              <button
-                type="submit"
-                id="btn-confirm-atelier-auth"
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-700 hover:from-cyan-700 hover:to-teal-800 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                <Lock className="w-4 h-4" />
-                Desbloquear e Entrar no Ateliê
-              </button>
+              {/* SMS & WhatsApp Options */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
+                <span className="font-bold text-slate-700 block text-[11px]">
+                  Deseja receber esta senha também no celular?
+                </span>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSendViaSMS}
+                    className="flex-1 py-1.5 px-2.5 rounded-lg bg-white border border-slate-300 hover:border-cyan-400 text-slate-700 hover:text-cyan-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  >
+                    <Smartphone className="w-3.5 h-3.5 text-cyan-600" />
+                    <span>SMS para {ATELIER_SMS_PHONE_DISPLAY}</span>
+                  </button>
 
-              <div className="flex items-center justify-between pt-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={handleWhatsAppFallback}
+                    className="flex-1 py-1.5 px-2.5 rounded-lg bg-white border border-slate-300 hover:border-emerald-400 text-slate-700 hover:text-emerald-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>WhatsApp</span>
+                  </button>
+                </div>
+                {sentViaSMS && (
+                  <p className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 pt-1">
+                    <Check className="w-3.5 h-3.5" /> SMS enviado com sucesso para {ATELIER_SMS_PHONE_DISPLAY}!
+                  </p>
+                )}
+              </div>
+
+              {/* Primary Direct Unlock Button */}
+              <div className="pt-2 space-y-2">
                 <button
                   type="button"
-                  id="btn-forgot-password-sms"
-                  onClick={handleForgotPasswordViaSMS}
-                  className="text-cyan-800 hover:text-cyan-950 font-bold flex items-center gap-1.5 transition-colors group py-1"
-                  title={`Enviar senha de acesso por SMS para o número ${ATELIER_SMS_RAW} (${ATELIER_SMS_PHONE_DISPLAY})`}
+                  onClick={handleUnlockDirectly}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                 >
-                  <Smartphone className="w-4 h-4 text-cyan-600 group-hover:scale-110 transition-transform" />
-                  <span>Esqueci a senha</span>
+                  <Lock className="w-4 h-4" />
+                  Entrar no Ateliê Agora
                 </button>
+
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="text-slate-500 hover:text-slate-800 font-medium transition-colors py-1"
+                  onClick={() => {
+                    setEnteredPassword(currentPassword);
+                    setAuthMode('login');
+                  }}
+                  className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
                 >
-                  Continuar como Cliente
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  Voltar para a tela de senha
                 </button>
               </div>
             </div>
-          </form>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
